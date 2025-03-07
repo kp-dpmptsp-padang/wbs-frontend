@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="grid grid-cols-4 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <img src="/logo.svg" alt="WBS Logo" className="h-8 w-8" />
+              <img src="/logo.png" alt="WBS Logo" className="h-16 w-16" />
               <span className="font-semibold">Whistle Blowing System</span>
             </div>
             <p className="text-sm text-gray-600">
