@@ -1,7 +1,7 @@
 import Router from './routes';
+import "preline/preline";
 
 function App() {
-  console.log("App rendered");
   return <Router />;
 }
 
