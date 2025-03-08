@@ -1,13 +1,13 @@
 import { lazy } from 'react';
 
-const Demo = lazy(() => import('@/pages/guest/Demo'));
+// const Dashboard = lazy(() => import('@/pages/users/Dashboard'));
 const MakeReport = lazy(() => import('@/pages/guest/MakeReport'));
 
-export const publicRoutes = [
-  {
-    path: '/components',
-    element: <Demo />,
-  },
+export const privateRoutes = [
+  // {
+  //   path: '/dashboard',
+  //   element: <Dashboard />,
+  // },
   {
     path: '/buat-laporan',
     element: <MakeReport />,

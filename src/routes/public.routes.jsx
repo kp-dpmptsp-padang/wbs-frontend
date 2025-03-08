@@ -9,6 +9,7 @@ const Register = lazy(() => import('@/pages/auth/Register'));
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
 const VerificationCode = lazy(() => import('@/pages/auth/VerifyCdode'));
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
+const Dashboard = lazy(() => import('@/pages/users/Dashboard'));
 
 export const publicRoutes = [
   {
@@ -47,4 +48,8 @@ export const publicRoutes = [
     path: '/reset-password',
     element: <ResetPassword />,
   },
+  {
+    path: '/dashboard',
+    element: <Dashboard />,
+  }
 ];
