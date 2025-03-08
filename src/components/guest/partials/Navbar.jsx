@@ -1,46 +1,182 @@
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@/components/common/Button.jsx';
 import Logo from '@/components/common/Logo.jsx';
 
 const Navbar = () => {
+  const location = useLocation();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Check if the current path matches the link
+  const isActive = (path) => location.pathname === path;
+
+  // Track scrolling to add shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
-    <header className="flex flex-wrap lg:justify-start lg:flex-nowrap z-50 w-full py-7">
-      <nav className="relative max-w-7xl w-full flex flex-wrap lg:grid lg:grid-cols-12 basis-full items-center px-4 md:px-6 lg:px-8 mx-auto">
-        <div className="lg:col-span-3 flex items-center">
-          <Logo size="default" />
-        </div>
-    
-        <div className="flex items-center gap-x-1 lg:gap-x-2 ms-auto py-1 lg:ps-6 lg:order-3 lg:col-span-3">
-        <button type="button" className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium text-nowrap rounded-xl bg-white border border-gray-200 text-black hover:bg-gray-100 focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:hover:bg-white/10 dark:text-white dark:hover:text-white dark:focus:text-white">
-          Register
-        </button>
-        <button type="button" className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium text-nowrap rounded-xl border border-transparent bg-lime-400 text-black hover:bg-lime-500 focus:outline-none focus:bg-lime-500 transition disabled:opacity-50 disabled:pointer-events-none">
-          Login
-        </button>
-    
-          <div className="lg:hidden">
-            <button type="button" className="hs-collapse-toggle size-[38px] flex justify-center items-center text-sm font-semibold rounded-xl border border-gray-200 text-black hover:bg-gray-100 focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none" id="hs-navbar-hcail-collapse" aria-expanded="false" aria-controls="hs-navbar-hcail" aria-label="Toggle navigation" data-hs-collapse="#hs-navbar-hcail">
-              <svg className="hs-collapse-open:hidden shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/></svg>
-              <svg className="hs-collapse-open:block hidden shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    <header className={`sticky top-0 z-50 w-full bg-white transition-all duration-300 ${
+      isScrolled ? 'shadow-md py-3' : 'py-5'
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="flex bg-white items-center justify-between">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Logo 
+              variant="full" 
+              size={isScrolled ? "sm" : "md"} 
+              className="transition-all duration-300"
+            />
+          </div>
+
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center space-x-8">
+            <NavLink to="/" isActive={isActive('/')}>
+              Beranda
+            </NavLink>
+            <NavLink to="/tentang" isActive={isActive('/tentang')}>
+              Tentang
+            </NavLink>
+            <NavLink to="/bantuan" isActive={isActive('/bantuan')}>
+              Bantuan
+            </NavLink>
+          </div>
+
+          {/* Desktop Authentication Buttons */}
+          <div className="hidden md:flex items-center space-x-3">
+            <Button 
+              variant="outline-primary" 
+              size="small" 
+              as={Link} 
+              to="/register"
+              className="rounded-lg font-medium"
+            >
+              Register
+            </Button>
+            <Button 
+              variant="primary" 
+              size="small" 
+              as={Link} 
+              to="/login"
+              className="rounded-lg font-medium"
+            >
+              Login
+            </Button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button
+              type="button"
+              onClick={toggleMobileMenu}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+              aria-expanded={isMobileMenuOpen}
+            >
+              <span className="sr-only">Open main menu</span>
+              {isMobileMenuOpen ? (
+                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
             </button>
           </div>
-        </div>
-    
-        <div id="hs-navbar-hcail" className="hs-collapse hidden overflow-hidden transition-all duration-300 basis-full grow lg:block lg:w-auto lg:basis-auto lg:order-2 lg:col-span-6" aria-labelledby="hs-navbar-hcail-collapse">
-          <div className="flex flex-col gap-y-4 gap-x-0 mt-5 lg:flex-row lg:justify-center lg:items-center lg:gap-y-0 lg:gap-x-7 lg:mt-0">
-            <div>
-              <Link className="relative inline-block text-black focus:outline-none before:absolute before:bottom-0.5 before:start-0 before:-z-[1] before:w-full before:h-1 before:bg-lime-400" to="/" aria-current="page">Beranda</Link>
-            </div>
-            <div>
-              <Link className="inline-block text-black hover:text-gray-600 focus:outline-none focus:text-gray-600" to="/tentang">Tentang</Link>
-            </div>
-            <div>
-              <Link className="inline-block text-black hover:text-gray-600 focus:outline-none focus:text-gray-600" to="/bantuan">Bantuan</Link>
+        </nav>
+
+        {/* Mobile Menu, shown/hidden based on menu state */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden mt-4 pb-4 border-t border-gray-200">
+            <div className="pt-4 space-y-3">
+              <MobileNavLink to="/" isActive={isActive('/')} onClick={() => setIsMobileMenuOpen(false)}>
+                Beranda
+              </MobileNavLink>
+              <MobileNavLink to="/tentang" isActive={isActive('/tentang')} onClick={() => setIsMobileMenuOpen(false)}>
+                Tentang
+              </MobileNavLink>
+              <MobileNavLink to="/bantuan" isActive={isActive('/bantuan')} onClick={() => setIsMobileMenuOpen(false)}>
+                Bantuan
+              </MobileNavLink>
+              
+              <div className="flex flex-col space-y-2 pt-2 mt-2 border-t border-gray-200">
+                <Button 
+                  variant="outline-primary" 
+                  size="small" 
+                  as={Link} 
+                  to="/register"
+                  className="w-full justify-center rounded-lg font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Register
+                </Button>
+                <Button 
+                  variant="primary" 
+                  size="small" 
+                  as={Link} 
+                  to="/login"
+                  className="w-full justify-center rounded-lg font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Login
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </nav>
+        )}
+      </div>
     </header>
+  );
+};
+
+// Desktop NavLink component
+const NavLink = ({ children, to, isActive }) => {
+  return (
+    <Link
+      to={to}
+      className={`relative px-1 py-2 font-medium text-base transition-colors duration-300 ${
+        isActive 
+          ? 'text-primary' 
+          : 'text-gray-700 hover:text-primary'
+      }`}
+    >
+      {children}
+      <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-primary transform transition-transform duration-300 ${
+        isActive ? 'scale-x-100' : 'scale-x-0 hover:scale-x-100'
+      }`}></span>
+    </Link>
+  );
+};
+
+// Mobile NavLink component
+const MobileNavLink = ({ children, to, isActive, onClick }) => {
+  return (
+    <Link
+      to={to}
+      className={`block px-3 py-2 rounded-md text-base font-medium ${
+        isActive 
+          ? 'text-primary bg-primary-50' 
+          : 'text-gray-700 hover:text-primary hover:bg-gray-50'
+      }`}
+      onClick={onClick}
+    >
+      {children}
+    </Link>
   );
 };
 
