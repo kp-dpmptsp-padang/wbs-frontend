@@ -91,7 +91,7 @@ const LoginForm = () => {
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
-            <Link to="/forgot-password" className="text-sm text-primary hover:text-primary-dark">
+            <Link to="/lupa-password" className="text-sm text-primary hover:text-primary-dark">
               Lupa password?
             </Link>
           </div>
