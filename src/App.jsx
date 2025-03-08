@@ -2,17 +2,18 @@
 import { useEffect } from 'react';
 import Router from './routes';
 import "preline/preline";
+import { AuthProvider } from './contexts/AuthContext';
 import { isAuthenticated } from './utils/token';
 
-// Initialize any global configs, event listeners here
 function App() {
   useEffect(() => {
     // Check authentication status when app loads
     const checkAuth = () => {
       if (isAuthenticated()) {
-        console.log('User is authenticated');
+        // Pastikan fungsi ini hanya memeriksa token, bukan user data
+        console.log('Token ditemukan');
       } else {
-        console.log('User is not authenticated');
+        console.log('Token tidak ditemukan');
       }
     };
     
@@ -25,7 +26,11 @@ function App() {
     console.log(`API URL: ${import.meta.env.VITE_APP_API_URL}`);
   }, []);
 
-  return <Router />;
+  return (
+    <AuthProvider>
+      <Router />
+    </AuthProvider>
+  );
 }
 
 export default App;

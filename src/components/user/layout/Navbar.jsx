@@ -1,11 +1,17 @@
 // src/components/user/layout/Navbar.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiBell, FiMenu } from 'react-icons/fi';
+import { FiBell, FiMenu, FiLogOut } from 'react-icons/fi';
+import { useAuth } from '@/contexts/AuthContext';
 import Logo from '@/components/common/Logo';
 
 const Navbar = ({ toggleSidebar }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 flex h-16 items-center bg-white border-b border-gray-200 px-4">
@@ -68,9 +74,13 @@ const Navbar = ({ toggleSidebar }) => {
               </Link>
               <div className="border-t border-gray-100 my-1"></div>
               <button
-                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                onClick={() => setShowProfileMenu(false)}
+                className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  handleLogout();
+                }}
               >
+                <FiLogOut className="mr-2 h-4 w-4" />
                 Keluar
               </button>
             </div>

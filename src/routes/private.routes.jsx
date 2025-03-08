@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 
 // const Dashboard = lazy(() => import('@/pages/users/Dashboard'));
-const MakeReport = lazy(() => import('@/pages/guest/MakeReport'));
+const MakeReport = lazy(() => import('@/pages/users/reporter/MakeReport'));
 
 export const privateRoutes = [
   // {
