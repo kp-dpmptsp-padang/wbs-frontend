@@ -6,6 +6,9 @@ const About = lazy(() => import('@/pages/guest/About'));
 const Help = lazy(() => import('@/pages/guest/Help'));
 const Login = lazy(() => import('@/pages/auth/Login'));
 const Register = lazy(() => import('@/pages/auth/Register'));
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
+const VerificationCode = lazy(() => import('@/pages/auth/VerifyCdode'));
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
 
 export const publicRoutes = [
   {
@@ -31,5 +34,17 @@ export const publicRoutes = [
   {
     path: '/register',
     element: <Register />,
+  },
+  {
+    path: '/lupa-password',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '/kode-verifikasi',
+    element: <VerificationCode />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
   },
 ];

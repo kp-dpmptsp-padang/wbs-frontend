@@ -10,6 +10,9 @@ import Carousel, { CarouselSlide } from '@/components/common/Carousel';
 import Chart from '@/components/common/Chart';
 import ChatBubbles, { ChatBubble } from '@/components/common/ChatBubbles';
 import Checkbox from '@/components/common/Checkbox';
+import Input from '@/components/common/Input';
+import TextArea from '@/components/common/TextArea';
+
 // import CheckboxGroup from '@/components/common/CheckboxGroup';
 
 import Logo from '@/components/common/Logo';
@@ -109,6 +112,10 @@ export default function Demo() {
         return renderChatBubblesSection();
       case 'checkboxes':
         return renderCheckboxesSection();
+      case 'inputs':
+        return renderInputsSection();
+      case 'textareas':
+        return renderTextAreasSection();
 
       case 'logos':
         return renderLogosSection();
@@ -1954,18 +1961,243 @@ export default function Demo() {
       </section>
     );
   };
+
+  const renderInputsSection = () => {
+    return (
+      <section>
+        <div className="space-y-6">
+          {/* Basic Inputs */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Basic Inputs</h3>
+            <div className="max-w-sm space-y-3">
+              <Input 
+                type="text" 
+                placeholder="Default input"
+              />
+              
+              <Input 
+                type="email" 
+                placeholder="Email address" 
+                variant="gray"
+                leftIcon={
+                  <svg className="shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                }
+              />
+              
+              <Input 
+                type="password" 
+                placeholder="Password" 
+                variant="gray"
+                leftIcon={
+                  <svg className="shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"></path>
+                    <circle cx="16.5" cy="7.5" r=".5"></circle>
+                  </svg>
+                }
+              />
+              
+              <Input 
+                type="text" 
+                placeholder="Input with error" 
+                error="This field is required"
+              />
+            </div>
+          </div>
+          
+          {/* Input Sizes */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Input Sizes</h3>
+            <div className="max-w-sm space-y-3">
+              <Input 
+                placeholder="Small size" 
+                size="sm"
+              />
+              
+              <Input 
+                placeholder="Default size" 
+                size="default"
+              />
+              
+              <Input 
+                placeholder="Large size" 
+                size="lg"
+              />
+            </div>
+          </div>
+          
+          {/* Input with Icons */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Input with Icons</h3>
+            <div className="max-w-sm space-y-3">
+              <Input 
+                placeholder="Left icon" 
+                leftIcon={
+                  <svg className="shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                  </svg>
+                }
+              />
+              
+              <Input 
+                placeholder="Right icon" 
+                rightIcon={
+                  <svg className="shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 16v-4"></path>
+                    <path d="M12 8h.01"></path>
+                  </svg>
+                }
+              />
+              
+              <Input 
+                placeholder="Both icons" 
+                leftIcon={
+                  <svg className="shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+                  </svg>
+                }
+                rightIcon={
+                  <svg className="shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                }
+              />
+            </div>
+          </div>
+          
+          {/* Disabled Inputs */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Disabled Inputs</h3>
+            <div className="max-w-sm space-y-3">
+              <Input 
+                placeholder="Disabled input" 
+                disabled
+              />
+              
+              <Input 
+                placeholder="Disabled with icon" 
+                disabled
+                leftIcon={
+                  <svg className="shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                }
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const renderTextAreasSection = () => {
+    return (
+      <section>
+        <div className="space-y-6">
+          {/* Basic TextAreas */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Basic TextAreas</h3>
+            <div className="max-w-sm space-y-3">
+              <TextArea 
+                placeholder="Default textarea"
+                rows={3}
+              />
+              
+              <TextArea 
+                placeholder="Gray variant"
+                variant="gray"
+                rows={3}
+              />
+              
+              <TextArea 
+                placeholder="With error message"
+                error="This field is required"
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          {/* TextArea Sizes */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">TextArea Sizes</h3>
+            <div className="max-w-sm space-y-3">
+              <TextArea 
+                placeholder="Small size"
+                size="sm"
+                rows={2}
+              />
+              
+              <TextArea 
+                placeholder="Default size"
+                size="default"
+                rows={3}
+              />
+              
+              <TextArea 
+                placeholder="Large size"
+                size="lg"
+                rows={4}
+              />
+            </div>
+          </div>
+          
+          {/* Resize Options */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Resize Options</h3>
+            <div className="max-w-sm space-y-3">
+              <TextArea 
+                placeholder="Vertical resize (default)"
+                resize="vertical"
+              />
+              
+              <TextArea 
+                placeholder="No resize"
+                resize="none"
+              />
+              
+              <TextArea 
+                placeholder="Horizontal resize"
+                resize="horizontal"
+              />
+              
+              <TextArea 
+                placeholder="Resize in both directions"
+                resize="both"
+              />
+            </div>
+          </div>
+          
+          {/* Disabled State */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Disabled TextArea</h3>
+            <div className="max-w-sm">
+              <TextArea 
+                placeholder="This textarea is disabled"
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
   
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
       <header className="bg-primary text-white p-4 shadow-md">
-        <div className="container mx-auto">
+        <div className="container mx-auto max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-2xl font-bold">WBS Component Library</h1>
           <p className="text-sm opacity-80">Component documentation and examples</p>
         </div>
       </header>
-      
-      <div className="container mx-auto py-6 px-4">
+       
+      <div className="container mx-auto py-6 px-4 max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar Navigation */}
           <aside className="md:w-64 flex-shrink-0">

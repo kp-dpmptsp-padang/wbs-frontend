@@ -41,11 +41,13 @@ const Footer = () => {
           {/* Logo and Description - DPMPTSP */}
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center">
-              <img 
-                src="/src/assets/images/dpmptsp.png" 
-                alt="DPMPTSP Kota Padang" 
-                className="h-10 w-auto"
-              />
+              <a href="https://dpmptsp.padang.go.id" target="_blank" rel="noopener noreferrer">
+                <img 
+                  src="/src/assets/images/dpmptsp.png" 
+                  alt="DPMPTSP Kota Padang" 
+                  className="h-10 w-auto"
+                />
+              </a>
             </div>
             
             <p className="mt-4 text-sm text-gray-600">

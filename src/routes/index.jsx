@@ -7,6 +7,9 @@ import About from '@/pages/guest/About';  // Import langsung untuk testing
 import Help from '@/pages/guest/Help';  // Import langsung untuk testing
 import Login from '@/pages/auth/Login';  // Import langsung untuk teat
 import Register from '@/pages/auth/Register';  // Import langsung untuk testing
+import ForgotPassword from '@/pages/auth/ForgotPassword';  // Import langsung untuk testing
+import VerificationCode from '@/pages/auth/VerifyCode';  // Import langsung untuk testing
+import ResetPassword from '@/pages/auth/ResetPassword';  // Import langsung untuk testing
 
 export default function Router() {
   console.log("Router rendered");
@@ -22,6 +25,9 @@ export default function Router() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/lupa-password" element={<ForgotPassword />} />
+          <Route path="/kode-verifikasi" element={<VerificationCode />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
       </Routes>
     </BrowserRouter>
