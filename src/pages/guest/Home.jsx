@@ -2,7 +2,7 @@ import HeroSection from '@/components/guest/HeroSection';
 import FiturUtama from '@/components/guest/MainFeature';
 import Statistik from '@/components/guest/Statistic';
 import WBSMobile from '@/components/guest/WBSMobile';
-import Button from '@/components/common/Button';
+import Workflow from '@/components/guest/Workflow';
 
 export default function Home() {
   console.log("Home component rendered");
@@ -11,6 +11,7 @@ export default function Home() {
       <HeroSection />
       <FiturUtama />
       <Statistik />
+      <Workflow />
       <WBSMobile />
     </div>
   );
