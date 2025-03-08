@@ -1,32 +1,142 @@
-// Input
-<div>
-{/* Placeholder */}
-<div className="max-w-sm space-y-3">
-  <input type="text" className="py-2.5 sm:py-3 px-4 block w-full border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none" placeholder="This is placeholder" />
-</div>
+import React, { forwardRef } from 'react';
+import PropTypes from 'prop-types';
 
-
-
-{/* Gray input */}
-<div className="max-w-sm space-y-3">
-  <div className="relative">
-    <input type="email" className="peer py-2.5 sm:py-3 px-4 ps-11 block w-full bg-gray-100 border-transparent rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none" placeholder="Enter name" />
-    <div className="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
-      <svg className="shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-        <circle cx="12" cy="7" r="4"></circle>
-      </svg>
+const Input = forwardRef(({
+  id,
+  name,
+  type = 'text',
+  value,
+  defaultValue,
+  placeholder,
+  disabled = false,
+  readOnly = false,
+  required = false,
+  error,
+  variant = 'default',
+  size = 'default',
+  className = '',
+  leftIcon,
+  rightIcon,
+  onChange,
+  onBlur,
+  onFocus,
+  ...rest
+}, ref) => {
+  // Base classes with explicit focus color
+  const baseClasses = "block w-full rounded-lg border sm:text-sm focus:border-primary focus:ring-primary focus:ring-1 focus:outline-none disabled:opacity-50 disabled:pointer-events-none";
+  
+  // Variant classes
+  const variantClasses = {
+    default: "border-gray-200 bg-white",
+    gray: "bg-gray-100 border-transparent",
+    error: "border-danger bg-white text-danger focus:border-danger focus:ring-danger"
+  };
+  
+  // Size classes
+  const sizeClasses = {
+    sm: "py-2 px-3",
+    default: "py-2.5 sm:py-3 px-4",
+    lg: "py-3 sm:py-4 px-5"
+  };
+  
+  // Icon padding
+  const iconPaddingClasses = {
+    left: "ps-11",
+    right: "pe-11",
+    both: "ps-11 pe-11",
+    none: ""
+  };
+  
+  // Determine icon padding
+  let iconPadding = "none";
+  if (leftIcon && rightIcon) iconPadding = "both";
+  else if (leftIcon) iconPadding = "left";
+  else if (rightIcon) iconPadding = "right";
+  
+  // If there's an error, override the variant
+  const currentVariant = error ? 'error' : variant;
+  
+  // Combine all classes
+  const inputClasses = [
+    baseClasses,
+    variantClasses[currentVariant],
+    sizeClasses[size],
+    iconPaddingClasses[iconPadding],
+    className
+  ].join(' ');
+  
+  // Error message styling
+  const errorMessageClasses = "text-sm text-danger mt-1";
+  
+  return (
+    <div className="relative">
+      {/* Input element */}
+      <input
+        ref={ref}
+        id={id}
+        name={name}
+        type={type}
+        value={value}
+        defaultValue={defaultValue}
+        className={inputClasses}
+        placeholder={placeholder}
+        disabled={disabled}
+        readOnly={readOnly}
+        required={required}
+        onChange={onChange}
+        onBlur={onBlur}
+        onFocus={onFocus}
+        {...rest}
+        style={{
+          "--tw-ring-color": "var(--color-primary)",
+          "--tw-border-opacity": 1,
+          "--tw-ring-opacity": 0.5
+        }}
+      />
+      
+      {/* Left icon */}
+      {leftIcon && (
+        <div className="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
+          {leftIcon}
+        </div>
+      )}
+      
+      {/* Right icon */}
+      {rightIcon && (
+        <div className="absolute inset-y-0 end-0 flex items-center pointer-events-none pe-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
+          {rightIcon}
+        </div>
+      )}
+      
+      {/* Error message */}
+      {error && typeof error === 'string' && (
+        <p className={errorMessageClasses}>{error}</p>
+      )}
     </div>
-  </div>
+  );
+});
 
-  <div className="relative">
-    <input type="password" className="peer py-2.5 sm:py-3 px-4 ps-11 block w-full bg-gray-100 border-transparent rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none" placeholder="Enter password" />
-    <div className="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4 peer-disabled:opacity-50 peer-disabled:pointer-events-none">
-      <svg className="shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"></path>
-        <circle cx="16.5" cy="7.5" r=".5"></circle>
-      </svg>
-    </div>
-  </div>
-</div>
-</div>
+Input.displayName = 'Input';
+
+Input.propTypes = {
+  id: PropTypes.string,
+  name: PropTypes.string,
+  type: PropTypes.string,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  placeholder: PropTypes.string,
+  disabled: PropTypes.bool,
+  readOnly: PropTypes.bool,
+  required: PropTypes.bool,
+  error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+  variant: PropTypes.oneOf(['default', 'gray', 'error']),
+  size: PropTypes.oneOf(['sm', 'default', 'lg']),
+  className: PropTypes.string,
+  leftIcon: PropTypes.node,
+  rightIcon: PropTypes.node,
+  onChange: PropTypes.func,
+  onBlur: PropTypes.func,
+  onFocus: PropTypes.func
+};
+
+export default Input;
