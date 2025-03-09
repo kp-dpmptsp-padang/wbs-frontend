@@ -3,32 +3,49 @@ import { useEffect } from 'react';
 import Router from './routes';
 import "preline/preline";
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
 import { isAuthenticated } from './utils/token';
+import { preemptiveTokenRefresh } from './services/api';
 
 function App() {
   useEffect(() => {
     // Check authentication status when app loads
-    const checkAuth = () => {
+    const checkAuth = async () => {
       if (isAuthenticated()) {
-        // Pastikan fungsi ini hanya memeriksa token, bukan user data
-        console.log('Token ditemukan');
+        // Verifikasi dan refresh token jika perlu
+        await preemptiveTokenRefresh();
+        console.log('Token verified and refreshed if needed');
       } else {
-        console.log('Token tidak ditemukan');
+        console.log('Not authenticated');
       }
     };
     
     checkAuth();
     
-    // Preline UI initialization (already being done)
+    // Set up interval to check token validity periodically (e.g., every 5 minutes)
+    const tokenRefreshInterval = setInterval(() => {
+      if (isAuthenticated()) {
+        preemptiveTokenRefresh();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    // Preline UI initialization
     
     // Log environment
     console.log(`Environment: ${import.meta.env.VITE_APP_ENV}`);
     console.log(`API URL: ${import.meta.env.VITE_APP_API_URL}`);
+    
+    // Cleanup interval on unmount
+    return () => {
+      clearInterval(tokenRefreshInterval);
+    };
   }, []);
 
   return (
     <AuthProvider>
-      <Router />
+      <ToastProvider>
+        <Router />
+      </ToastProvider>
     </AuthProvider>
   );
 }

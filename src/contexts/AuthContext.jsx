@@ -1,6 +1,7 @@
 // src/contexts/AuthContext.jsx
+import api from '@/services/api';
 import { createContext, useContext, useState, useEffect } from 'react';
-import { getToken, getUser, removeToken, setAuthData } from '@/utils/token';
+import { getToken, getUser, removeToken, setAuthData, getRefreshToken } from '@/utils/token';
 import authService from '@/services/auth.service';
 
 // Buat Auth Context
@@ -91,57 +92,58 @@ const login = async (email, password) => {
     }
   };
 
-  // Register function
-  const register = async (userData) => {
-    setLoading(true);
-    setError(null);
+// Register function
+const register = async (userData) => {
+  setLoading(true);
+  setError(null);
+  
+  try {
+    const result = await authService.register(userData);
     
-    try {
-      const result = await authService.register(userData);
-      
-      if (result.success) {
-        setUser(result.data.user);
-        return { success: true, user: result.data.user };
-      } else {
-        setError(result.error);
-        return { success: false, error: result.error };
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      const errorMsg = 'Registrasi gagal. Silakan coba lagi.';
-      setError(errorMsg);
-      return { success: false, error: errorMsg };
-    } finally {
-      setLoading(false);
+    if (result.success) {
+      setUser(result.data.user);
+      return { success: true, user: result.data.user };
+    } else {
+      setError(result.error);
+      return { success: false, error: result.error };
     }
-  };
+  } catch (error) {
+    console.error('Registration error:', error);
+    const errorMsg = 'Registrasi gagal. Silakan coba lagi.';
+    setError(errorMsg);
+    return { success: false, error: errorMsg };
+  } finally {
+    setLoading(false);
+  }
+};
 
-  // Logout function
+// Logout function
 // src/contexts/AuthContext.jsx - Perbaiki fungsi logout
+// Fungsi logout yang benar
 const logout = async () => {
-    setLoading(true);
-    
-    try {
-      console.log('AuthContext: Attempting to logout');
-      // Jika perlu, panggil endpoint logout
-      const refreshToken = getRefreshToken();
-      if (refreshToken) {
-        await api.post('/auth/logout', { refresh_token: refreshToken });
-      }
-    } catch (error) {
-      console.error('AuthContext: Logout error:', error);
-    } finally {
-      console.log('AuthContext: Clearing auth data');
-      // Hapus data auth dari localStorage
-      removeToken();
-      // Reset state
-      setUser(null);
-      setLoading(false);
-      
-      // Redirect ke halaman login setelah logout
-      window.location.href = '/login';
+  setLoading(true);
+  
+  try {
+    console.log('AuthContext: Attempting to logout');
+    // Jika perlu, panggil endpoint logout
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      await authService.logout(refreshToken);
     }
-  };
+  } catch (error) {
+    console.error('AuthContext: Logout error:', error);
+  } finally {
+    console.log('AuthContext: Clearing auth data');
+    // Hapus data auth dari localStorage
+    removeToken();
+    // Reset state
+    setUser(null);
+    setLoading(false);
+    
+    // Redirect ke halaman login setelah logout
+    window.location.href = '/login';
+  }
+};
 
   // Check if user has specific role
   const hasRole = (roles) => {
@@ -159,6 +161,7 @@ const logout = async () => {
     login,
     register,
     logout,
+    setUser,
     isAuthenticated: !!user && !!getToken(), // Pastikan user dan token ada
     hasRole
   };

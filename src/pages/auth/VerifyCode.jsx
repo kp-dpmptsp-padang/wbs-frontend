@@ -1,14 +1,43 @@
-import React, { useState } from 'react';
+// src/pages/auth/VerifyCode.jsx
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import { FiArrowLeft, FiLock } from 'react-icons/fi';
+import authService from '@/services/auth.service';
+import useApi from '@/hooks/useApi';
 
 const VerifyCode = () => {
-  const [verificationCode, setVerificationCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const verifyCodeApi = useApi(authService.verifyResetCode);
+  const resendCodeApi = useApi(authService.forgotPassword);
+  
+  const [email, setEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [errors, setErrors] = useState({});
+  const [resendDisabled, setResendDisabled] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  // Ambil email dari session storage
+  useEffect(() => {
+    const storedEmail = sessionStorage.getItem('resetEmail');
+    if (storedEmail) {
+      setEmail(storedEmail);
+    } else {
+      // Jika tidak ada email tersimpan, kembali ke halaman lupa password
+      navigate('/lupa-password');
+    }
+  }, [navigate]);
+
+  // Countdown timer untuk fitur resend
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0 && resendDisabled) {
+      setResendDisabled(false);
+    }
+  }, [countdown, resendDisabled]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,36 +49,44 @@ const VerifyCode = () => {
       return;
     }
 
-    // Simulasi request ke API
-    setLoading(true);
-    try {
-      // Implementasi request ke API akan ditambahkan di sini
-      console.log('Verifying code:', verificationCode);
+    // Panggil API verifikasi kode
+    const result = await verifyCodeApi.execute(email, verificationCode);
+    
+    if (result.success) {
+      // Simpan token reset jika ada
+      if (result.data?.reset_token) {
+        sessionStorage.setItem('resetToken', result.data.reset_token);
+      }
       
-      // Simulasi delay API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect ke halaman reset password
+      // Arahkan ke halaman reset password
       navigate('/reset-password');
-    } catch (error) {
-      console.error('Verification failed:', error);
-      setErrors({ general: 'Kode verifikasi tidak valid. Silakan coba lagi.' });
-    } finally {
-      setLoading(false);
+    } else {
+      setErrors({ general: result.error || 'Kode verifikasi tidak valid' });
     }
   };
 
   const handleResendCode = async () => {
-    console.log('Resending verification code');
-    // Implementasi untuk mengirim ulang kode
-    // ...
+    if (resendDisabled) return;
+    
+    setResendDisabled(true);
+    setCountdown(60); // Countdown 60 detik
+    
+    try {
+      const result = await resendCodeApi.execute(email);
+      
+      if (!result.success) {
+        setErrors({ general: result.error || 'Gagal mengirim ulang kode' });
+      }
+    } catch (error) {
+      setErrors({ general: 'Terjadi kesalahan. Silakan coba lagi.' });
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="p-4 flex items-center">
-        <Link to="/forgot-password" className="text-primary hover:text-primary-dark">
+        <Link to="/lupa-password" className="text-primary hover:text-primary-dark">
           <FiArrowLeft className="h-6 w-6" />
         </Link>
       </div>
@@ -58,14 +95,15 @@ const VerifyCode = () => {
       <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <h1 className="text-2xl font-bold text-primary mb-2">Konfirmasi Akun Anda</h1>
+            <h1 className="text-2xl font-bold text-primary mb-2">Verifikasi Kode</h1>
             <p className="text-gray-600 mb-6">
-              Kami sudah mengirimkan kode ke email Anda. Masukkan kode tersebut untuk mengonfirmasi akun Anda.
+              Kami telah mengirimkan kode ke email <span className="font-semibold">{email}</span>. 
+              Masukkan kode tersebut untuk melanjutkan proses reset password.
             </p>
 
-            {errors.general && (
+            {(errors.general || verifyCodeApi.error) && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
-                {errors.general}
+                {errors.general || verifyCodeApi.error}
               </div>
             )}
 
@@ -78,7 +116,7 @@ const VerifyCode = () => {
                   id="code"
                   name="code"
                   type="text"
-                  placeholder="XXXXXXXXXXXXX"
+                  placeholder="Masukkan kode verifikasi"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
                   error={errors.code}
@@ -90,29 +128,28 @@ const VerifyCode = () => {
                 type="submit"
                 variant="primary"
                 block={true}
-                loading={loading}
-                disabled={loading}
+                loading={verifyCodeApi.loading}
+                disabled={verifyCodeApi.loading}
               >
-                Kirim
+                Verifikasi Kode
               </Button>
 
-              <div className="text-center">
+              <div className="text-center mt-4">
                 <button 
                   type="button" 
                   onClick={handleResendCode}
-                  className="text-sm text-primary hover:text-primary-dark font-medium"
+                  disabled={resendDisabled || resendCodeApi.loading}
+                  className={`text-sm ${resendDisabled ? 'text-gray-400' : 'text-primary hover:text-primary-dark'} font-medium`}
                 >
-                  Kirim Ulang Kode
+                  {resendDisabled 
+                    ? `Kirim Ulang Kode (${countdown}s)` 
+                    : resendCodeApi.loading
+                      ? 'Mengirim...'
+                      : 'Kirim Ulang Kode'}
                 </button>
               </div>
             </form>
           </div>
-        </div>
-
-        {/* Footer Logos */}
-        <div className="mt-auto py-8 flex justify-center space-x-6">
-          <img src="/logo-dpmptsp.png" alt="DPMPTSP Kota Padang" className="h-12" />
-          <img src="/logo-clear.png" alt="CLEAR" className="h-12" />
         </div>
       </div>
     </div>

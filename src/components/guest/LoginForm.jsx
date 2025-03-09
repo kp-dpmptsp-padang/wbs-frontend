@@ -4,25 +4,32 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Logo from '@/components/common/Logo';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext'; // Tetap menggunakan import dari contexts/AuthContext
+import { useToast } from '@/contexts/ToastContext';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import useApi from '@/hooks/useApi';  // Tambahkan import useApi
+import authService from '@/services/auth.service'; // Tambahkan import authService
 
 const LoginForm = () => {
-  // State for form fields
+  // State untuk form fields (tetap sama)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   
-  // Get auth context, navigation and location
-  const { login, loading, error: authError } = useAuth();
+  // Get auth context, navigation and location (tetap sama)
+  const { login, setUser } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Redirect to intended route or dashboard after login
+  // Tambahkan useApi hook untuk login
+  const loginApi = useApi(authService.login);
+  
+  // Redirect to intended route or dashboard after login (tetap sama)
   const from = location.state?.from?.pathname || '/dashboard';
   
-  // Handle input change for email
+  // Handle input change for email (tetap sama)
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
     // Clear error when user starts typing
@@ -31,7 +38,7 @@ const LoginForm = () => {
     }
   };
   
-  // Handle input change for password
+  // Handle input change for password (tetap sama)
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
     // Clear error when user starts typing
@@ -40,10 +47,10 @@ const LoginForm = () => {
     }
   };
   
-  // Toggle password visibility
+  // Toggle password visibility (tetap sama)
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   
-  // Form validation
+  // Form validation (tetap sama)
   const validateForm = () => {
     const newErrors = {};
     
@@ -61,35 +68,35 @@ const LoginForm = () => {
     return Object.keys(newErrors).length === 0; // Returns true if no errors
   };
   
-  // Handle form submission
-// src/components/guest/LoginForm.jsx - Update handleSubmit
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  // Validate form
-  if (!validateForm()) {
-    return;
-  }
-  
-  try {
-    console.log('Submitting login form with:', { email, password });
-    const result = await login(email, password);
-    console.log('Login result:', result);
+  // Handle form submission - Ubah untuk menggunakan useApi
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
-    if (result.success) {
-      console.log('Login successful, redirecting to dashboard');
-      // Gunakan replace: true untuk mencegah kembali ke halaman login dengan tombol Back
-      navigate('/dashboard', { replace: true });
-    } else {
-      console.error('Login failed:', result.error);
-      // Show error message
-      setErrors({ general: result.error || 'Login gagal. Silakan coba lagi.' });
+    // Validate form
+    if (!validateForm()) {
+      return;
     }
-  } catch (error) {
-    console.error('Login error:', error);
-    setErrors({ general: 'Terjadi kesalahan saat login. Silakan coba lagi nanti.' });
-  }
-};
+    
+    try {
+      // console.log('Submitting login form with:', { email, password });
+      
+      // Panggil login API menggunakan useApi hook
+      const result = await loginApi.execute(email, password);
+      console.log('Login result:', result);
+      
+      if (result.success) {
+        setUser(result.data.user); // Gunakan setUser yang di-destructure
+        navigate(from, { replace: true });
+      } else if (!result.success) {
+        console.error('Login failed:', result.error);
+        // Show error message
+        addToast(result.error || 'Login gagal. Silakan coba lagi.', 'error', 0); // 0 = tetap tampil
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({ general: 'Terjadi kesalahan saat login. Silakan coba lagi nanti.' });
+    }
+  };
   
   return (
     <div className="w-full max-w-md mx-auto">
@@ -103,10 +110,10 @@ const handleSubmit = async (e) => {
         </p>
       </div>
 
-      {/* Error message */}
-      {(errors.general || authError) && (
+      {/* Error message - Diubah untuk menampilkan error dari loginApi juga */}
+      {(errors.general || loginApi.error) && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-          {errors.general || authError}
+          {errors.general || loginApi.error}
         </div>
       )}
 
@@ -182,12 +189,13 @@ const handleSubmit = async (e) => {
         </div>
 
         <div>
+          {/* Tambahkan loading state dari loginApi */}
           <Button
             type="submit"
             variant="primary"
             block={true}
-            loading={loading}
-            disabled={loading}
+            loading={loginApi.loading}
+            disabled={loginApi.loading}
           >
             Masuk
           </Button>

@@ -1,20 +1,39 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+// src/pages/auth/ResetPassword.jsx
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
+import Logo from '@/components/common/Logo';
 import { FiArrowLeft, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import authService from '@/services/auth.service';
+import useApi from '@/hooks/useApi';
 
 const ResetPassword = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const resetPasswordApi = useApi(authService.resetPassword);
+
+  const [token, setToken] = useState('');
   const [formData, setFormData] = useState({
-    email: 'email.com', // Bisa diambil dari parameter URL atau state
     password: '',
     confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
+  const [tokenError, setTokenError] = useState(false);
+
+  // Ekstrak token dari URL query parameter
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tokenFromUrl = params.get('token');
+    
+    if (tokenFromUrl) {
+      setToken(tokenFromUrl);
+    } else {
+      setTokenError(true);
+    }
+  }, [location]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,6 +41,15 @@ const ResetPassword = () => {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -35,7 +63,7 @@ const ResetPassword = () => {
   const validate = () => {
     const newErrors = {};
     
-    if (!formData.password) newErrors.password = 'Password diperlukan';
+    if (!formData.password) newErrors.password = 'Password baru diperlukan';
     else if (formData.password.length < 8) newErrors.password = 'Password minimal 8 karakter';
     
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Konfirmasi password diperlukan';
@@ -49,39 +77,73 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validasi form
+    // Validate form
     const formErrors = validate();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
     
-    // Reset errors jika validasi berhasil
-    setErrors({});
-    setLoading(true);
+    // Prepare data for API
+    const resetData = {
+      token: token,
+      new_password: formData.password,
+      new_password_confirmation: formData.confirmPassword
+    };
     
-    try {
-      // Implementasi request ke API akan ditambahkan di sini
-      console.log('Resetting password for:', formData);
-      
-      // Simulasi delay API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect ke halaman login setelah berhasil
-      navigate('/login', { state: { resetSuccess: true } });
-    } catch (error) {
-      console.error('Password reset failed:', error);
-      setErrors({ general: 'Gagal mengatur password baru. Silakan coba lagi.' });
-    } finally {
-      setLoading(false);
+    // Call API
+    const result = await resetPasswordApi.execute(resetData);
+    
+    if (result.success) {
+      // Redirect to login with success message
+      navigate('/login', { 
+        state: { 
+          resetSuccess: true,
+          message: 'Password Anda berhasil diubah. Silakan login dengan password baru Anda.'
+        },
+        replace: true
+      });
+    } else {
+      setErrors({ general: result.error });
     }
   };
+
+  // Tampilkan pesan error jika tidak ada token
+  if (tokenError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+              </div>
+              <h2 className="mt-3 text-lg font-medium text-gray-900">Link Reset Password Tidak Valid</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Link reset password tidak valid atau sudah kadaluarsa. Silakan meminta link reset password baru.
+              </p>
+              <div className="mt-5">
+                <Link 
+                  to="/lupa-password" 
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  Kembali ke Halaman Lupa Password
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="p-4 flex items-center">
-        <Link to="/verify-code" className="text-primary hover:text-primary-dark">
+        <Link to="/login" className="text-primary hover:text-primary-dark">
           <FiArrowLeft className="h-6 w-6" />
         </Link>
       </div>
@@ -92,30 +154,16 @@ const ResetPassword = () => {
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <h1 className="text-2xl font-bold text-primary mb-2">Atur Password Baru</h1>
             <p className="text-gray-600 mb-6">
-              Buat password baru yang kuat dan jangan lupa disimpan/dicatat.
+              Buat password baru yang kuat dan jangan lupa disimpan dengan aman.
             </p>
 
-            {errors.general && (
+            {(errors.general || resetPasswordApi.error) && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
-                {errors.general}
+                {errors.general || resetPasswordApi.error}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  disabled={true}
-                  readOnly={true}
-                />
-              </div>
-              
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Password Baru
@@ -132,12 +180,9 @@ const ResetPassword = () => {
                     <button 
                       type="button" 
                       onClick={togglePasswordVisibility} 
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-500 hover:text-gray-700"
+                      className="text-gray-500 hover:text-gray-700"
                     >
-                      {showPassword ? 
-                        <FiEyeOff className="h-5 w-5" /> : 
-                        <FiEye className="h-5 w-5" />
-                      }
+                      {showPassword ? <FiEyeOff /> : <FiEye />}
                     </button>
                   }
                   error={errors.password}
@@ -161,12 +206,9 @@ const ResetPassword = () => {
                     <button 
                       type="button" 
                       onClick={toggleConfirmPasswordVisibility} 
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-500 hover:text-gray-700"
+                      className="text-gray-500 hover:text-gray-700"
                     >
-                      {showConfirmPassword ? 
-                        <FiEyeOff className="h-5 w-5" /> : 
-                        <FiEye className="h-5 w-5" />
-                      }
+                      {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
                     </button>
                   }
                   error={errors.confirmPassword}
@@ -178,8 +220,8 @@ const ResetPassword = () => {
                 type="submit"
                 variant="primary"
                 block={true}
-                loading={loading}
-                disabled={loading}
+                loading={resetPasswordApi.loading}
+                disabled={resetPasswordApi.loading}
               >
                 Reset Password
               </Button>
@@ -187,10 +229,9 @@ const ResetPassword = () => {
           </div>
         </div>
 
-        {/* Footer Logos */}
+        {/* Footer Logo */}
         <div className="mt-auto py-8 flex justify-center space-x-6">
-          <img src="/logo-dpmptsp.png" alt="DPMPTSP Kota Padang" className="h-12" />
-          <img src="/logo-clear.png" alt="CLEAR" className="h-12" />
+          <Logo variant="full" size="lg" isClickable={false} />
         </div>
       </div>
     </div>

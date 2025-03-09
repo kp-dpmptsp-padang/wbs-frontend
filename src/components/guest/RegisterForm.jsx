@@ -1,11 +1,19 @@
+// src/components/guest/RegisterForm.jsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import Logo from '@/components/common/Logo';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import authService from '@/services/auth.service';
+import useApi from '@/hooks/useApi';
+import { useAuth } from '@/contexts/AuthContext';
 
 const RegisterForm = () => {
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
+  const registerApi = useApi(authService.register);
+  
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -16,7 +24,6 @@ const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -24,6 +31,15 @@ const RegisterForm = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -66,24 +82,45 @@ const RegisterForm = () => {
       return;
     }
     
-    // Reset errors if validation passes
-    setErrors({});
-    setLoading(true);
+    // Prepare data for API
+    const userData = {
+      name: formData.fullName,
+      email: formData.email,
+      password: formData.password,
+      password_confirmation: formData.confirmPassword
+    };
     
-    try {
-      // Here you would integrate with your registration service
-      console.log('Registration attempt with:', formData);
+    console.log('Submitting registration form with:', userData);
+    
+    // Call registration API
+    const result = await registerApi.execute(userData);
+    
+      if (result.success) {
+        console.log('Registration successful:', result.data);
+        
+        // Tambahkan log untuk memeriksa user data
+        console.log('User data to be set:', result.data.user);
+        
+        // Update auth context with user data
+        if (result.data.user) {
+          setUser(result.data.user);
+          console.log('User state set in context');
+        }
+        
+        console.log('About to navigate to dashboard');
+        // Redirect to dashboard
+        navigate('/dashboard', { replace: true });
+        console.log('Navigation function called');
+        
+      } else {
+      console.error('Registration failed:', result.error);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Navigate programmatically after successful registration
-      console.log('Registration successful');
-    } catch (error) {
-      console.error('Registration failed:', error);
-      setErrors({ general: 'Gagal mendaftar. Silakan coba lagi.' });
-    } finally {
-      setLoading(false);
+      // Handle API validation errors
+      if (result.error.includes('Email')) {
+        setErrors(prev => ({ ...prev, email: result.error }));
+      } else {
+        setErrors(prev => ({ ...prev, general: result.error }));
+      }
     }
   };
 
@@ -97,9 +134,10 @@ const RegisterForm = () => {
         </p>
       </div>
       
-      {errors.general && (
+      {/* Display general error if any */}
+      {(errors.general || registerApi.error) && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
-          {errors.general}
+          {errors.general || registerApi.error}
         </div>
       )}
       
@@ -154,12 +192,9 @@ const RegisterForm = () => {
               <button 
                 type="button" 
                 onClick={togglePasswordVisibility} 
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700"
               >
-                {showPassword ? 
-                  <FiEyeOff className="h-5 w-5" /> : 
-                  <FiEye className="h-5 w-5" />
-                }
+                {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
             }
             error={errors.password}
@@ -183,12 +218,9 @@ const RegisterForm = () => {
               <button 
                 type="button" 
                 onClick={toggleConfirmPasswordVisibility} 
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700"
               >
-                {showConfirmPassword ? 
-                  <FiEyeOff className="h-5 w-5" /> : 
-                  <FiEye className="h-5 w-5" />
-                }
+                {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
               </button>
             }
             error={errors.confirmPassword}
@@ -221,8 +253,8 @@ const RegisterForm = () => {
           type="submit"
           variant="primary"
           block={true}
-          loading={loading}
-          disabled={loading}
+          loading={registerApi.loading}
+          disabled={registerApi.loading}
           className="mt-6"
         >
           Daftar

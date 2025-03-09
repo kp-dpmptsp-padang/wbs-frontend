@@ -1,8 +1,14 @@
+// src/pages/auth/Login.jsx (modifikasi untuk menampilkan pesan sukses reset password)
 import React from "react";
+import { useLocation } from "react-router-dom";
 import LoginForm from "@/components/guest/LoginForm";
 import { FiShield, FiLock, FiEye } from 'react-icons/fi';
 
 export default function Login() {
+  const location = useLocation();
+  const resetSuccess = location.state?.resetSuccess;
+  const successMessage = location.state?.message;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       {/* Ilustrasi Sisi Kiri (untuk desktop) */}
@@ -37,6 +43,18 @@ export default function Login() {
       {/* Form Sisi Kanan */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
+          {/* Tampilkan pesan sukses reset password jika ada */}
+          {resetSuccess && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+              <div className="flex">
+                <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{successMessage || 'Password berhasil direset. Silakan login dengan password baru Anda.'}</span>
+              </div>
+            </div>
+          )}
+          
           <LoginForm />
           <div className="mt-8 text-center text-sm text-gray-500">
             <p>© {new Date().getFullYear()} Whistle Blowing System. Semua Hak Dilindungi.</p>
