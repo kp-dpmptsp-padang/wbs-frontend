@@ -44,6 +44,7 @@ const ProtectedRoute = ({ requiredRoles }) => {
     return <Navigate to="/login" replace />;
   }
   
+  // Jika requiredRoles disediakan, periksa apakah user memiliki role yang diperlukan
   if (requiredRoles && !requiredRoles.includes(user.role)) {
     console.log('ProtectedRoute: User role not allowed, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
@@ -57,34 +58,73 @@ export default function Router() {
     <BrowserRouter>
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
-          {/* Public Routes with GuestGuard - redirect to dashboard if authenticated */}
+          {/* Public routes - accessible without authentication */}
           <Route element={<GuestGuard />}>
+            {/* Guest layout routes */}
             <Route element={<GuestLayout />}>
-              <Route path="/" element={publicRoutes.find(r => r.path === '/').element} />
-              <Route path="/tentang" element={publicRoutes.find(r => r.path === '/tentang').element} />
-              <Route path="/bantuan" element={publicRoutes.find(r => r.path === '/bantuan').element} />
+              {publicRoutes
+                .filter(route => route.layout === 'guest')
+                .map(route => (
+                  <Route key={route.path} path={route.path} element={route.element} />
+                ))
+              }
             </Route>
-          
-            {/* Auth Routes */}
+            
+            {/* Auth layout routes */}
             <Route element={<AuthLayout />}>
-              <Route path="/login" element={publicRoutes.find(r => r.path === '/login').element} />
-              <Route path="/register" element={publicRoutes.find(r => r.path === '/register').element} />
-              <Route path="/lupa-password" element={publicRoutes.find(r => r.path === '/lupa-password').element} />
-              <Route path="/kode-verifikasi" element={publicRoutes.find(r => r.path === '/kode-verifikasi').element} />
-              <Route path="/reset-password" element={publicRoutes.find(r => r.path === '/reset-password').element} />
+              {publicRoutes
+                .filter(route => route.layout === 'auth')
+                .map(route => (
+                  <Route key={route.path} path={route.path} element={route.element} />
+                ))
+              }
             </Route>
           </Route>
           
           {/* Demo route - public without guard */}
           <Route path="/components" element={publicRoutes.find(r => r.path === '/components').element} />
           
-          {/* Protected Routes - redirect to login if not authenticated */}
+          {/* Protected routes grouped by role requirement */}
+          {/* Routes for all authenticated users */}
           <Route element={<ProtectedRoute />}>
             <Route element={<UserLayout />}>
-              <Route path="/dashboard" element={publicRoutes.find(r => r.path === '/dashboard').element} />
-              {privateRoutes.map((route) => (
-                <Route key={route.path} path={route.path} element={route.element} />
-              ))}
+              {privateRoutes
+                .filter(route => 
+                  route.roles?.includes('user') || 
+                  route.roles?.includes('admin') || 
+                  route.roles?.includes('super-admin'))
+                .map(route => (
+                  <Route key={route.path} path={route.path} element={route.element} />
+                ))
+              }
+            </Route>
+          </Route>
+          
+          {/* Admin-only routes */}
+          <Route element={<ProtectedRoute requiredRoles={['admin', 'super-admin']} />}>
+            <Route element={<UserLayout />}>
+              {privateRoutes
+                .filter(route => 
+                  (route.roles?.includes('admin') || route.roles?.includes('super-admin')) &&
+                  !route.roles?.includes('user'))
+                .map(route => (
+                  <Route key={route.path} path={route.path} element={route.element} />
+                ))
+              }
+            </Route>
+          </Route>
+          
+          {/* Super-admin-only routes */}
+          <Route element={<ProtectedRoute requiredRoles={['super-admin']} />}>
+            <Route element={<UserLayout />}>
+              {privateRoutes
+                .filter(route => route.roles?.includes('super-admin') && 
+                  !route.roles?.includes('admin') && 
+                  !route.roles?.includes('user'))
+                .map(route => (
+                  <Route key={route.path} path={route.path} element={route.element} />
+                ))
+              }
             </Route>
           </Route>
           
