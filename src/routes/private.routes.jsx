@@ -20,8 +20,9 @@ const ReportRecap = lazy(() => import('@/pages/users/admin/ReportRecap'));
 const AdminList = lazy(() => import('@/pages/users/admin/AdminList'));
 
 // Profile & settings
-const Profile = lazy(() => import('@/pages/users/Profile'));
+const Profile = lazy(() => import('@/pages/users/UserProfile'));
 const Notification = lazy(() => import('@/pages/users/Notification'));
+const Chat = lazy(() => import('@/pages/users/Chat'));
 
 // Define private routes with required roles
 export const privateRoutes = [
@@ -36,22 +37,22 @@ export const privateRoutes = [
   {
     path: '/laporan/buat',
     element: <MakeReport />,
-    roles: ['user', 'admin', 'super-admin'] // Semua user bisa membuat laporan
+    roles: ['user'] // Semua user bisa membuat laporan
   },
   {
     path: '/laporan/pantau',
     element: <MonitorReport />,
-    roles: ['user', 'admin', 'super-admin']
+    roles: ['user']
   },
   {
     path: '/laporan/anonim',
     element: <MonitorAnonymReport />,
-    roles: ['user', 'admin', 'super-admin']
+    roles: ['user']
   },
   {
     path: '/laporan/riwayat',
     element: <ReportHistory />,
-    roles: ['user', 'admin', 'super-admin']
+    roles: ['user']
   },
   
   // Admin routes
@@ -92,6 +93,11 @@ export const privateRoutes = [
   {
     path: '/notifikasi',
     element: <Notification />,
+    roles: ['user', 'admin', 'super-admin']
+  },
+  {
+    path: '/chat',
+    element: <Chat />,
     roles: ['user', 'admin', 'super-admin']
   }
 ];

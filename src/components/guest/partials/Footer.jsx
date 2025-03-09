@@ -63,6 +63,7 @@ const Footer = () => {
               <FooterLink to="/">Beranda</FooterLink>
               <FooterLink to="/tentang">Tentang</FooterLink>
               <FooterLink to="/bantuan">Bantuan</FooterLink>
+              <FooterLink to="/components">Komponen</FooterLink>
             </ul>
           </div>
           
