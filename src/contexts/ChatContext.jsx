@@ -1,8 +1,8 @@
 // src/contexts/ChatContext.jsx
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { chatService } from '@/services';
-import useApi from '@/hooks/useApi';
 import { useToast } from './ToastContext';
+import { useAuth } from './AuthContext';
 
 // Membuat context untuk chat
 const ChatContext = createContext(null);
@@ -12,78 +12,152 @@ export const ChatProvider = ({ children }) => {
   const [chats, setChats] = useState([]);
   const [currentReportId, setCurrentReportId] = useState(null);
   const [isAnonymousChat, setIsAnonymousChat] = useState(false);
-  const { showToast } = useToast();
+  const { addToast } = useToast();
+  const { isAuthenticated } = useAuth();
+  const [lastUpdate, setLastUpdate] = useState(null);
   
-  // Gunakan custom hook useApi
-  const { loading: chatsLoading, execute: fetchReportChats } = useApi(chatService.getReportChats);
-  const { loading: anonymousChatsLoading, execute: fetchAnonymousChats } = useApi(chatService.getAnonymousReportChats);
-  const { loading: sendMessageLoading, execute: executeSendMessage } = useApi(chatService.sendChatMessage);
-  const { loading: sendAnonymousMessageLoading, execute: executeSendAnonymousMessage } = useApi(chatService.sendAnonymousChatMessage);
+  // Loading states
+  const [loadingStates, setLoadingStates] = useState({
+    chats: false,
+    sendMessage: false
+  });
+
+  // Set loading state helper
+  const setLoading = (key, value) => {
+    setLoadingStates(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
 
   // Fungsi untuk mendapatkan riwayat chat untuk laporan tertentu
   const getReportChats = useCallback(async (reportId) => {
+    if (!reportId) {
+      addToast('ID Laporan diperlukan', 'error');
+      return { success: false, error: 'ID Laporan diperlukan' };
+    }
+    
+    setLoading('chats', true);
     setCurrentReportId(reportId);
     setIsAnonymousChat(false);
     
-    const result = await fetchReportChats(reportId);
-    if (result.success) {
-      setChats(result.data);
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await chatService.getReportChats(reportId);
+      if (result.success) {
+        // Pastikan data adalah array
+        const chatData = Array.isArray(result.data) ? result.data : [];
+        setChats(chatData);
+        setLastUpdate(new Date());
+      } else {
+        addToast(result.error || 'Gagal memuat riwayat chat', 'error');
+      }
+      return result;
+    } catch (error) {
+      console.error('Error in getReportChats:', error);
+      addToast('Terjadi kesalahan saat memuat chat', 'error');
+      return { success: false, error: error.message };
+    } finally {
+      setLoading('chats', false);
     }
-    return result;
-  }, [fetchReportChats, showToast]);
+  }, [addToast]);
 
   // Fungsi untuk mendapatkan riwayat chat untuk laporan anonim
   const getAnonymousReportChats = useCallback(async (uniqueCode) => {
+    if (!uniqueCode) {
+      addToast('Kode unik diperlukan', 'error');
+      return { success: false, error: 'Kode unik diperlukan' };
+    }
+    
+    setLoading('chats', true);
     setCurrentReportId(uniqueCode);
     setIsAnonymousChat(true);
     
-    const result = await fetchAnonymousChats(uniqueCode);
-    if (result.success) {
-      setChats(result.data);
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await chatService.getAnonymousReportChats(uniqueCode);
+      if (result.success) {
+        // Pastikan data adalah array
+        const chatData = Array.isArray(result.data) ? result.data : [];
+        setChats(chatData);
+        setLastUpdate(new Date());
+      } else {
+        addToast(result.error || 'Gagal memuat riwayat chat', 'error');
+      }
+      return result;
+    } catch (error) {
+      console.error('Error in getAnonymousReportChats:', error);
+      addToast('Terjadi kesalahan saat memuat chat', 'error');
+      return { success: false, error: error.message };
+    } finally {
+      setLoading('chats', false);
     }
-    return result;
-  }, [fetchAnonymousChats, showToast]);
+  }, [addToast]);
 
   // Fungsi untuk mengirim pesan chat
   const sendChatMessage = useCallback(async (message) => {
     if (!currentReportId) {
-      showToast('error', 'Tidak ada laporan yang dipilih');
-      return { success: false };
+      addToast('Tidak ada laporan yang dipilih', 'error');
+      return { success: false, error: 'Tidak ada laporan yang dipilih' };
     }
     
-    let result;
-    
-    if (isAnonymousChat) {
-      result = await executeSendAnonymousMessage(currentReportId, message);
-    } else {
-      result = await executeSendMessage(currentReportId, message);
+    if (!message || message.trim() === '') {
+      addToast('Pesan tidak boleh kosong', 'warning');
+      return { success: false, error: 'Pesan tidak boleh kosong' };
     }
     
-    if (result.success) {
-      // Tambahkan pesan ke daftar chat lokal
-      setChats(prev => [...prev, result.data]);
-    } else {
-      showToast('error', result.error);
-    }
+    setLoading('sendMessage', true);
     
-    return result;
-  }, [
-    currentReportId, 
-    isAnonymousChat, 
-    executeSendMessage, 
-    executeSendAnonymousMessage, 
-    showToast
-  ]);
+    try {
+      let result;
+      
+      if (isAnonymousChat) {
+        result = await chatService.sendAnonymousChatMessage(currentReportId, message);
+      } else {
+        result = await chatService.sendChatMessage(currentReportId, message);
+      }
+      
+      if (result.success && result.data) {
+        // Tambahkan pesan ke daftar chat lokal
+        // Pastikan prev adalah array sebelum menggunakan spread operator
+        setChats(prev => {
+          const prevChats = Array.isArray(prev) ? prev : [];
+          return [...prevChats, result.data];
+        });
+        setLastUpdate(new Date());
+      } else {
+        addToast(result.error || 'Gagal mengirim pesan', 'error');
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error in sendChatMessage:', error);
+      addToast('Terjadi kesalahan saat mengirim pesan', 'error');
+      return { success: false, error: error.message };
+    } finally {
+      setLoading('sendMessage', false);
+    }
+  }, [currentReportId, isAnonymousChat, addToast]);
+
+  // Poll for new messages every 30 seconds if there's an active chat
+  useEffect(() => {
+    if (!isAuthenticated || !currentReportId) return;
+    
+    const pollInterval = setInterval(() => {
+      if (isAnonymousChat) {
+        getAnonymousReportChats(currentReportId);
+      } else {
+        getReportChats(currentReportId);
+      }
+    }, 30000); // 30 seconds
+    
+    return () => clearInterval(pollInterval);
+  }, [isAuthenticated, currentReportId, isAnonymousChat, getReportChats, getAnonymousReportChats]);
 
   // Nilai yang akan disediakan oleh context
   const value = {
     chats,
     currentReportId,
     isAnonymousChat,
+    lastUpdate,
     
     // Actions
     getReportChats,
@@ -91,17 +165,14 @@ export const ChatProvider = ({ children }) => {
     sendChatMessage,
     
     // Loading states
-    loading: {
-      chats: chatsLoading || anonymousChatsLoading,
-      sendMessage: sendMessageLoading || sendAnonymousMessageLoading
-    },
+    loading: loadingStates,
     
     // Helpers
-    clearChats: () => {
+    clearChats: useCallback(() => {
       setChats([]);
       setCurrentReportId(null);
       setIsAnonymousChat(false);
-    }
+    }, [])
   };
 
   return (
