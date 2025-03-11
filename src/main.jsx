@@ -1,11 +1,14 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import 'preline/dist/preline.js';
 import './styles/input.css'
 import App from './App.jsx'
+import AppProviders from './contexts/AppProvider';
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <AppProviders>
       <App />
-  </StrictMode>,
-)
+    </AppProviders>
+  </React.StrictMode>
+);

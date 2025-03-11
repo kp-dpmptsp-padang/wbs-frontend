@@ -10,10 +10,16 @@ export const useToast = () => {
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  // Use useCallback to prevent re-creation of the function on each render
+  // In ToastContext.jsx, ensure addToast has proper type checking:
+
   const addToast = useCallback((message, type = 'error', duration = 5000) => {
+    // Ensure message is a string
+    const safeMessage = typeof message === 'string' ? message : 
+                      (message && typeof message.toString === 'function' ? 
+                        message.toString() : 'Notification');
+    
     const id = Date.now();
-    const newToast = { id, message, type };
+    const newToast = { id, message: safeMessage, type };
     
     setToasts(prev => [...prev, newToast]);
     

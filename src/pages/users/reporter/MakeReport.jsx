@@ -1,8 +1,9 @@
-// src/pages/users/reporter/MakeReport.jsx
+// In MakeReport.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/contexts/ToastContext';
-// import reportService from '@/services/report.service';
+import reportService from '@/services/report.service';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import ReportRules from '@/components/user/ReportRules';
 import ReportForm from '@/components/user/ReportForm';
@@ -15,42 +16,63 @@ const MakeReport = () => {
   const [acceptedGuidelines, setAcceptedGuidelines] = useState(false);
   const [showGuidelines, setShowGuidelines] = useState(true);
 
-  // Handle when user accepts guidelines
   const handleAcceptGuidelines = () => {
     setShowGuidelines(false);
   };
 
-  // Handle when user wants to view guidelines again
   const handleViewGuidelines = () => {
     setShowGuidelines(true);
   };
 
-  // Handle form submission
   const handleSubmitReport = async (formData) => {
     setIsSubmitting(true);
     
     try {
+      // Create a safe version of formData for logging
+      const formDataEntries = {};
+      formData.forEach((value, key) => {
+        if (key !== 'evidence_files') {
+          formDataEntries[key] = value;
+        } else {
+          formDataEntries[key] = '[File Object]';
+        }
+      });
+      console.log('FormData entries:', formDataEntries);
+      
+      // Call the service
       const result = await reportService.createReport(formData);
       
-      if (result.success) {
+      // Handle successful submission
+      if (result && result.success) {
+        // Show success message
         addToast('Laporan berhasil dibuat', 'success');
         
-        // If anonymous report, show unique code to user
+        // Determine if this is an anonymous report
         const isAnonymous = formData.get('is_anonymous') === 'true';
-        if (isAnonymous && result.data.unique_code) {
-          addToast(`Kode unik laporan anonim Anda: ${result.data.unique_code}. Harap simpan kode ini untuk memantau status laporan.`, 'success', 10000);
-        }
         
-        // Redirect to appropriate page
-        if (isAnonymous) {
-          navigate('/laporan/anonim', { state: { uniqueCode: result.data.unique_code } });
-        } else {
-          navigate('/laporan/pantau');
+        try {
+          // Safe navigation to next page
+          setTimeout(() => {
+            if (isAnonymous && result.data && result.data.unique_code) {
+              // For anonymous reports with unique code
+              const uniqueCode = result.data.unique_code;
+              addToast(`Kode unik laporan anonim Anda: ${uniqueCode}`, 'success', 10000);
+              navigate('/laporan/anonim', { state: { uniqueCode } });
+            } else {
+              // For regular reports
+              navigate('/laporan/pantau');
+            }
+          }, 500); // Add delay to ensure toast shows before navigation
+        } catch (navigationError) {
+          console.error('Navigation error:', navigationError);
+          // If navigation fails, at least stay on the page
         }
       } else {
-        addToast(result.error || 'Gagal membuat laporan', 'error');
+        // Handle API error
+        addToast(result?.error || 'Gagal membuat laporan', 'error');
       }
     } catch (error) {
+      // Handle exception
       console.error('Error submitting report:', error);
       addToast('Terjadi kesalahan saat mengirim laporan', 'error');
     } finally {

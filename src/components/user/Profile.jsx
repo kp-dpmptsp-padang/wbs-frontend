@@ -25,15 +25,17 @@ const Profile = ({ user, onEditProfile }) => {
     );
   }
 
-  // Get user initials from name
-  const getInitials = (name) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
-  };
+// Tambahkan pengecekan null/undefined pada fungsi getInitials
+const getInitials = (name) => {
+  if (!name) return 'U'; // Return a default initial if name is not available
+  
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+};
 
   // Get role badge color
   const getRoleBadgeProps = (role) => {

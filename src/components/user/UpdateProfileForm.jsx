@@ -48,7 +48,12 @@ const UpdateProfileForm = ({ user, onSubmit, onCancel, isLoading }) => {
       return;
     }
     
-    onSubmit(formData);
+    // Pastikan kita hanya mengirim data yang diperlukan
+    const dataToSubmit = {
+      name: formData.name.trim()
+    };
+    
+    onSubmit(dataToSubmit);
   };
 
   return (

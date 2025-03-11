@@ -73,7 +73,14 @@ const UpdatePasswordForm = ({ onSubmit, isLoading }) => {
       return;
     }
     
-    onSubmit(formData);
+    // Pastikan data sesuai dengan yang diharapkan API
+    const passwordData = {
+      current_password: formData.current_password,
+      new_password: formData.new_password,
+      new_password_confirmation: formData.new_password_confirmation
+    };
+    
+    onSubmit(passwordData);
   };
 
   // Password strength indicator

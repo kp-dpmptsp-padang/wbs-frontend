@@ -25,7 +25,7 @@ const processQueue = (error, token = null) => {
 const api = axios.create({
   baseURL: import.meta.env.VITE_APP_API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    // 'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
   timeout: 30000, // 30 seconds

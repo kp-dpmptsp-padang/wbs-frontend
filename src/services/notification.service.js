@@ -15,14 +15,16 @@ const notificationService = {
       const response = await api.get('/notifications', { params });
       return {
         success: true,
-        data: response.data.data,
-        meta: response.data.meta
+        data: response.data.data || [],
+        meta: response.data.meta || {}
       };
     } catch (error) {
       console.error('Error fetching notifications:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Gagal memuat notifikasi'
+        error: error.response?.data?.message || 'Gagal memuat notifikasi',
+        data: [],
+        meta: {}
       };
     }
   },
@@ -77,15 +79,31 @@ const notificationService = {
       const response = await api.get('/notifications', {
         params: { is_read: false, per_page: 1 }
       });
+      
+      // Periksa apakah struktur respons sesuai yang diharapkan
+      let unreadCount = 0;
+      
+      if (response.data && response.data.meta && response.data.meta.unread_count !== undefined) {
+        // Format respons standar
+        unreadCount = response.data.meta.unread_count;
+      } else if (response.data && response.data.unread_count !== undefined) {
+        // Format respons alternatif
+        unreadCount = response.data.unread_count;
+      } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        // Hitung dari data yang diterima
+        unreadCount = response.data.data.filter(item => !item.is_read).length;
+      }
+      
       return {
         success: true,
-        data: response.data.meta.unread_count
+        data: unreadCount
       };
     } catch (error) {
       console.error('Error fetching unread count:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Gagal memuat jumlah notifikasi'
+        error: error.response?.data?.message || 'Gagal memuat jumlah notifikasi',
+        data: 0
       };
     }
   }

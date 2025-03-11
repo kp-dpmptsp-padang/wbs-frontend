@@ -7,20 +7,42 @@ const reportService = {
    * @param {Object} formData - FormData berisi data laporan dan file
    * @returns {Promise} - Promise dengan data laporan yang dibuat
    */
+    // src/services/report.service.js
+  // Di src/services/report.service.js
+  // In report.service.js, modify the createReport function:
+
   async createReport(formData) {
     try {
-      console.log('Creating report with data:', Object.fromEntries(formData));
+      // Log simplified FormData entries for debugging
+      const formDataEntries = {};
+      formData.forEach((value, key) => {
+        if (key !== 'evidence_files') {
+          formDataEntries[key] = value;
+        } else {
+          formDataEntries[key] = `[File: ${value.name}]`;
+        }
+      });
+      console.log('Creating report with data:', formDataEntries);
+      
+      // Make API call with proper headers
       const response = await api.post('/reports', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
+      
+      // Log response to see structure
+      console.log('API response:', response.data);
+      
+      // Carefully extract data with fallbacks
+      const responseData = response.data || {};
+      
       return {
         success: true,
-        data: response.data.data
+        data: responseData.data || responseData
       };
     } catch (error) {
-      console.error('Error creating report:', error);
+      console.error('Error creating report:', error.response?.data || error.message);
       return {
         success: false,
         error: error.response?.data?.message || 'Gagal membuat laporan'

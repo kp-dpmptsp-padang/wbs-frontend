@@ -1,4 +1,3 @@
-// src/components/user/ReportForm.jsx
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { 
@@ -46,11 +45,16 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
     }
   };
 
-  // Handle file input change
   const handleFileChange = (e) => {
+    console.log("File input change triggered");
     const file = e.target.files[0];
-    if (!file) return;
-
+    if (!file) {
+      console.log("No file selected");
+      return;
+    }
+    
+    console.log("File selected:", file.name, file.type, file.size);
+  
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setErrors(prev => ({
@@ -59,8 +63,8 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
       }));
       return;
     }
-
-    // Check file type (allow images, PDFs, docs)
+  
+    // Check file type
     const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(file.type)) {
       setErrors(prev => ({
@@ -69,13 +73,13 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
       }));
       return;
     }
-
+  
     setReportForm(prev => ({
       ...prev,
       evidence_files: file
     }));
     setSelectedFile(file);
-
+  
     // Create preview for image files
     if (file.type.startsWith('image/')) {
       const reader = new FileReader();
@@ -87,7 +91,7 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
       // For non-image files, just show the file name
       setFilePreview(null);
     }
-
+  
     // Clear error
     if (errors.evidence_files) {
       setErrors(prev => ({ ...prev, evidence_files: null }));
@@ -115,7 +119,7 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
     if (!reportForm.date.trim()) {
       newErrors.date = 'Tanggal kejadian harus diisi';
     } else {
-      // Validate date format (DD-MM-YYYY)
+      // Validasi format tanggal (DD-MM-YYYY)
       const datePattern = /^\d{2}-\d{2}-\d{4}$/;
       if (!datePattern.test(reportForm.date)) {
         newErrors.date = 'Format tanggal harus DD-MM-YYYY';
@@ -140,7 +144,7 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
+  // Di ReportForm.jsx - fungsi handleSubmit
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -150,14 +154,35 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
     
     // Create FormData object for file upload
     const formData = new FormData();
-    Object.keys(reportForm).forEach(key => {
-      if (key === 'evidence_files') {
-        formData.append('evidence_files', reportForm.evidence_files);
-      } else {
-        formData.append(key, reportForm[key]);
-      }
+    
+    // Append each field with proper value type
+    formData.append('title', reportForm.title);
+    formData.append('violation', reportForm.violation);
+    formData.append('location', reportForm.location);
+    formData.append('date', reportForm.date);
+    formData.append('actors', reportForm.actors);
+    formData.append('detail', reportForm.detail);
+    formData.append('is_anonymous', reportForm.is_anonymous ? 'true' : 'false'); // Convert boolean to string
+    
+    // Append file if exists
+    if (reportForm.evidence_files) {
+      formData.append('evidence_files', reportForm.evidence_files);
+    }
+    
+    // Log only the field names and simple values for debugging
+    console.log('Submitting report with data:', {
+      title: reportForm.title,
+      violation: reportForm.violation,
+      location: reportForm.location,
+      date: reportForm.date,
+      actors: reportForm.actors,
+      detail: reportForm.detail.substring(0, 30) + '...',
+      is_anonymous: reportForm.is_anonymous ? 'true' : 'false',
+      has_file: !!reportForm.evidence_files,
+      file_name: reportForm.evidence_files ? reportForm.evidence_files.name : null
     });
     
+    // Submit form
     onSubmit(formData);
   };
 
@@ -298,7 +323,10 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
             <label htmlFor="evidence_files" className="block text-sm font-medium text-gray-700 mb-1">
               Bukti Pendukung <span className="text-red-500">*</span>
             </label>
-            <div className={`border-2 border-dashed rounded-lg p-4 ${errors.evidence_files ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-primary'}`}>
+            <div 
+              className={`border-2 border-dashed rounded-lg p-4 ${errors.evidence_files ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-primary'}`}
+              onClick={() => document.getElementById('evidence_files').click()} // Trigger file dialog when clicking anywhere in this div
+            >
               <div className="flex flex-col items-center">
                 {!selectedFile ? (
                   <>
@@ -316,7 +344,8 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
                       <button
                         type="button" 
                         className="text-red-500 hover:text-red-700"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering the parent's onClick
                           setSelectedFile(null);
                           setFilePreview(null);
                           setReportForm(prev => ({ ...prev, evidence_files: null }));
@@ -332,6 +361,8 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
                     )}
                   </div>
                 )}
+                
+                {/* Hidden file input */}
                 <input
                   id="evidence_files"
                   name="evidence_files"
@@ -340,16 +371,19 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
                   className="hidden"
                   accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
                 />
-                <label htmlFor="evidence_files" className="mt-3">
-                  <Button
-                    type="button"
-                    variant={selectedFile ? "outline-primary" : "primary"}
-                    size="small"
-                    icon={selectedFile ? <FiFileText /> : <FiUploadCloud />}
-                  >
-                    {selectedFile ? "Ganti File" : "Pilih File"}
-                  </Button>
-                </label>
+                
+                {/* Explicit button for file selection */}
+                <button 
+                  type="button"
+                  className="mt-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent duplicate click events
+                    document.getElementById('evidence_files').click();
+                  }}
+                >
+                  {selectedFile ? <FiFileText className="mr-2" /> : <FiUploadCloud className="mr-2" />}
+                  {selectedFile ? "Ganti File" : "Pilih File"}
+                </button>
               </div>
             </div>
             {errors.evidence_files && (

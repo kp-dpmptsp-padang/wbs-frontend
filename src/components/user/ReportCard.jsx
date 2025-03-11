@@ -1,3 +1,4 @@
+// src/components/user/ReportCard.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import Card from '@/components/common/Card';
@@ -21,7 +22,7 @@ const ReportCard = ({
       iconBg: 'bg-yellow-400',
       textColor: 'text-yellow-800'
     },
-    'sedang-diproses': {
+    'diproses': {
       label: 'Sedang Diproses',
       color: 'bg-blue-400',
       iconBg: 'bg-blue-400',
@@ -52,7 +53,7 @@ const ReportCard = ({
   return (
     <Card 
       variant="outline"
-      className={`overflow-hidden ${className}`}
+      className={`overflow-hidden h-full flex flex-col ${className}`}
       {...rest}
     >
       {/* Top section with status color */}
@@ -89,34 +90,34 @@ const ReportCard = ({
       </div>
       
       {/* Report content */}
-      <div className="p-4">
+      <div className="p-4 flex-1">
         <h3 className="text-base font-semibold text-gray-800 mb-1">{title}</h3>
         <p className="text-xs text-gray-500 mb-3">Terjadi pada {date}</p>
         <p className="text-sm text-gray-600 mb-4">
           {truncateText(description)}
         </p>
+      </div>
+      
+      {/* Action buttons */}
+      <div className="flex border-t border-gray-200 mt-auto">
+        <button 
+          className="flex-1 py-3 text-sm text-center text-gray-700 hover:bg-gray-50 transition-colors"
+          onClick={() => onClick && onClick('detail')}
+        >
+          Detail
+        </button>
         
-        {/* Action buttons */}
-        <div className="flex border-t border-gray-200 mt-2 pt-2">
-          <button 
-            className="flex-1 py-2 text-sm text-center text-gray-700 hover:bg-gray-50 transition-colors"
-            onClick={() => onClick && onClick('detail')}
-          >
-            Detail
-          </button>
-          
-          <div className="border-r border-gray-200"></div>
-          
-          <button 
-            className="flex-1 py-2 text-sm text-center text-gray-700 hover:bg-gray-50 transition-colors relative"
-            onClick={() => onClick && onClick('komunikasi')}
-          >
-            Komunikasi
-            {hasNewMessages && (
-              <span className="absolute top-1 right-4 size-2 bg-red-500 rounded-full"></span>
-            )}
-          </button>
-        </div>
+        <div className="border-r border-gray-200"></div>
+        
+        <button 
+          className="flex-1 py-3 text-sm text-center text-gray-700 hover:bg-gray-50 transition-colors relative"
+          onClick={() => onClick && onClick('komunikasi')}
+        >
+          Komunikasi
+          {hasNewMessages && (
+            <span className="absolute top-3 right-6 size-2 bg-red-500 rounded-full"></span>
+          )}
+        </button>
       </div>
     </Card>
   );
@@ -126,7 +127,7 @@ ReportCard.propTypes = {
   title: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
-  status: PropTypes.oneOf(['menunggu-verifikasi', 'sedang-diproses', 'selesai', 'ditolak']).isRequired,
+  status: PropTypes.oneOf(['menunggu-verifikasi', 'diproses', 'selesai', 'ditolak']).isRequired,
   icon: PropTypes.node,
   onClick: PropTypes.func,
   hasNewMessages: PropTypes.bool,

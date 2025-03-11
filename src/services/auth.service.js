@@ -181,6 +181,44 @@ const authService = {
     }
   },
 
+  // Fungsi updateProfile
+  async updateProfile(userData) {
+    try {
+      const response = await api.put('/auth/profile', userData);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error('Update profile error:', error.response?.data || error.message);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Gagal memperbarui profil'
+      };
+    }
+  },
+
+  // Fungsi updatePassword
+  async updatePassword(passwordData) {
+    try {
+      const response = await api.put('/auth/password', {
+        current_password: passwordData.current_password,
+        new_password: passwordData.new_password,
+        new_password_confirmation: passwordData.new_password_confirmation
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error('Update password error:', error.response?.data || error.message);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Gagal memperbarui password'
+      };
+    }
+  },
+
   // Update di authService
   async refreshToken() {
     try {

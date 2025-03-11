@@ -43,11 +43,17 @@ const UserProfile = () => {
   const handleUpdateProfile = async (data) => {
     setIsSubmitting(true);
     try {
+      console.log('Updating profile with data:', data);
       const result = await authService.updateProfile(data);
+      console.log('Update profile result:', result);
+      
       if (result.success) {
+        // Extract user data properly
+        const userData = result.data.user || result.data;
+        
         // Update local user state with new data
-        setUser(prev => ({ ...prev, ...result.data.user }));
-        setProfileData(prev => ({ ...prev, ...result.data.user }));
+        setUser(prev => ({ ...prev, ...userData }));
+        setProfileData(prev => ({ ...prev, ...userData }));
         addToast('Profil berhasil diperbarui', 'success');
         setActiveView('profile');
       } else {

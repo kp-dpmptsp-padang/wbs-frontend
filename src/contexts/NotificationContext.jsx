@@ -23,71 +23,104 @@ export const NotificationProvider = ({ children }) => {
 
   // Fungsi untuk mengambil notifikasi dengan filter opsional
   const getNotifications = useCallback(async (params = {}) => {
-    const result = await fetchNotifications(params);
-    if (result.success) {
-      setNotifications(result.data);
-      setUnreadCount(result.meta.unread_count);
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await fetchNotifications(params);
+      if (result.success) {
+        setNotifications(result.data || []);
+        
+        // Pastikan meta ada sebelum mengakses unread_count
+        if (result.meta && typeof result.meta.unread_count !== 'undefined') {
+          setUnreadCount(result.meta.unread_count);
+        }
+      } else {
+        showToast('error', result.error);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error in getNotifications:', error);
+      showToast('error', 'Gagal memuat notifikasi');
+      return { success: false, error: error.message };
     }
-    return result;
   }, [fetchNotifications, showToast]);
 
   // Fungsi untuk menandai notifikasi sebagai dibaca
   const markAsRead = useCallback(async (notificationId) => {
-    const result = await executeMarkAsRead(notificationId);
-    if (result.success) {
-      // Update notifikasi lokal
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === notificationId 
-            ? { ...notification, is_read: true } 
-            : notification
-        )
-      );
-      
-      // Kurangi unread count
-      setUnreadCount(prev => Math.max(0, prev - 1));
-      
-      showToast('success', 'Notifikasi ditandai sebagai dibaca');
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await executeMarkAsRead(notificationId);
+      if (result.success) {
+        // Update notifikasi lokal
+        setNotifications(prev => 
+          prev.map(notification => 
+            notification.id === notificationId 
+              ? { ...notification, is_read: true } 
+              : notification
+          )
+        );
+        
+        // Kurangi unread count
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        
+        showToast('success', 'Notifikasi ditandai sebagai dibaca');
+      } else {
+        showToast('error', result.error);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error in markAsRead:', error);
+      showToast('error', 'Gagal menandai notifikasi sebagai dibaca');
+      return { success: false, error: error.message };
     }
-    return result;
   }, [executeMarkAsRead, showToast]);
 
   // Fungsi untuk menandai semua notifikasi sebagai dibaca
   const markAllAsRead = useCallback(async () => {
-    const result = await executeMarkAllAsRead();
-    if (result.success) {
-      // Update semua notifikasi lokal
-      setNotifications(prev => 
-        prev.map(notification => ({ ...notification, is_read: true }))
-      );
-      
-      // Reset unread count
-      setUnreadCount(0);
-      
-      showToast('success', 'Semua notifikasi ditandai sebagai dibaca');
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await executeMarkAllAsRead();
+      if (result.success) {
+        // Update semua notifikasi lokal
+        setNotifications(prev => 
+          prev.map(notification => ({ ...notification, is_read: true }))
+        );
+        
+        // Reset unread count
+        setUnreadCount(0);
+        
+        showToast('success', 'Semua notifikasi ditandai sebagai dibaca');
+      } else {
+        showToast('error', result.error);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error in markAllAsRead:', error);
+      showToast('error', 'Gagal menandai semua notifikasi sebagai dibaca');
+      return { success: false, error: error.message };
     }
-    return result;
   }, [executeMarkAllAsRead, showToast]);
 
   // Fungsi untuk mendapatkan jumlah notifikasi yang belum dibaca
   const getUnreadCount = useCallback(async () => {
-    const result = await fetchUnreadCount();
-    if (result.success) {
-      setUnreadCount(result.data);
+    try {
+      if (!isAuthenticated) {
+        return { success: true, data: 0 };
+      }
+      
+      const result = await fetchUnreadCount();
+      if (result.success) {
+        setUnreadCount(result.data);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error in getUnreadCount:', error);
+      return { success: false, error: error.message, data: 0 };
     }
-    return result;
-  }, [fetchUnreadCount]);
+  }, [fetchUnreadCount, isAuthenticated]);
 
   // Ambil unread count saat komponen dimount
   useEffect(() => {
     if (isAuthenticated) {
-      getUnreadCount();
+      getUnreadCount().catch(error => {
+        console.error('Failed to get unread count:', error);
+      });
     }
   }, [isAuthenticated, getUnreadCount]);
 
@@ -96,7 +129,9 @@ export const NotificationProvider = ({ children }) => {
     if (!isAuthenticated) return;
     
     const interval = setInterval(() => {
-      getUnreadCount();
+      getUnreadCount().catch(error => {
+        console.error('Failed to get unread count in interval:', error);
+      });
     }, 60000); // Cek setiap 1 menit
     
     return () => clearInterval(interval);
