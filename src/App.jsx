@@ -4,6 +4,10 @@ import Router from './routes';
 import "preline/preline";
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { ReportProvider } from './contexts/ReportContext';
+import { ChatProvider } from './contexts/ChatContext';
+import { AdminProvider } from './contexts/AdminContext';
 import { isAuthenticated } from './utils/token';
 import { preemptiveTokenRefresh } from './services/api';
 
@@ -12,7 +16,7 @@ function App() {
     // Check authentication status when app loads
     const checkAuth = async () => {
       if (isAuthenticated()) {
-        // Verifikasi dan refresh token jika perlu
+        // Verify and refresh token if needed
         await preemptiveTokenRefresh();
         console.log('Token verified and refreshed if needed');
       } else {
@@ -42,11 +46,19 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <Router />
-      </ToastProvider>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <NotificationProvider>
+          <ReportProvider>
+            <ChatProvider>
+              <AdminProvider>
+                <Router />
+              </AdminProvider>
+            </ChatProvider>
+          </ReportProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

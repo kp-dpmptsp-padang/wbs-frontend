@@ -1,9 +1,10 @@
 // src/components/user/layout/Navbar.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiBell, FiMenu, FiLogOut } from 'react-icons/fi';
+import { FiMenu, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
 import Logo from '@/components/common/Logo';
+import NotificationDropdown from '@/components/user/layout/NotificationDropdown';
 
 const Navbar = ({ toggleSidebar }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -11,6 +12,18 @@ const Navbar = ({ toggleSidebar }) => {
 
   const handleLogout = () => {
     logout();
+  };
+
+  // Get user initials for the avatar
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
   };
 
   return (
@@ -25,24 +38,17 @@ const Navbar = ({ toggleSidebar }) => {
           <FiMenu className="h-6 w-6" />
         </button>
 
-        {/* Perbaikan: Gunakan Logo tanpa Link di dalamnya */}
         <Link to="/dashboard" className="flex items-center">
-          {/* Gunakan Logo dengan isClickable={false} agar tidak membuat Link */}
           <Logo variant="icon" size="sm" className="mr-2 bg-white" isClickable={false} />
           <span className="text-xl font-semibold text-primary">CLEAR</span>
         </Link>
       </div>
 
       {/* Right side: Notifications & Profile */}
-      <div className="flex items-center space-x-3 ml-auto">
-        <button
-          type="button"
-          className="relative p-1 text-gray-600 hover:text-primary rounded-full focus:outline-none"
-        >
-          <FiBell className="h-6 w-6" />
-          <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-        </button>
-
+      <div className="flex items-center space-x-4 ml-auto">
+        {/* Notification Component */}
+        <NotificationDropdown />
+        
         {/* Profile dropdown */}
         <div className="relative">
           <button
@@ -51,7 +57,7 @@ const Navbar = ({ toggleSidebar }) => {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
             <div className="h-9 w-9 overflow-hidden rounded-full bg-primary text-white flex items-center justify-center">
-              <span className="font-medium text-sm">US</span>
+              <span className="font-medium text-sm">{getInitials(user?.name)}</span>
             </div>
           </button>
 
@@ -66,11 +72,11 @@ const Navbar = ({ toggleSidebar }) => {
                 Profil
               </Link>
               <Link
-                to="/pengaturan"
+                to="/notifikasi"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => setShowProfileMenu(false)}
               >
-                Pengaturan
+                Notifikasi
               </Link>
               <div className="border-t border-gray-100 my-1"></div>
               <button
