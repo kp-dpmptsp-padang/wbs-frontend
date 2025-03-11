@@ -1,91 +1,72 @@
 // src/components/common/Modal.jsx
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { FiX } from 'react-icons/fi';
 import { createPortal } from 'react-dom';
 
-const Modal = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children, 
-  size = 'md',
-  showCloseButton = true,
-  closeOnClickOutside = true
-}) => {
+const Modal = ({ isOpen, onClose, children, size = 'md' }) => {
   const modalRef = useRef(null);
-
-  // Close on ESC key press
+  
+  // Handle click outside of modal content
+  const handleBackdropClick = (e) => {
+    if (modalRef.current && !modalRef.current.contains(e.target)) {
+      onClose();
+    }
+  };
+  
+  // Close modal on ESC key press
   useEffect(() => {
-    const handleEsc = (event) => {
-      if (event.key === 'Escape') {
+    const handleEscKey = (e) => {
+      if (e.key === 'Escape' && isOpen) {
         onClose();
       }
     };
     
     if (isOpen) {
-      document.addEventListener('keydown', handleEsc);
-      // Prevent scrolling of the body when modal is open
+      document.addEventListener('keydown', handleEscKey);
+      // Prevent scrolling on body when modal is open
       document.body.style.overflow = 'hidden';
     }
     
     return () => {
-      document.removeEventListener('keydown', handleEsc);
+      document.removeEventListener('keydown', handleEscKey);
       // Re-enable scrolling when modal is closed
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = 'auto';
     };
   }, [isOpen, onClose]);
-
-  // Handle click outside
-  const handleBackdropClick = (e) => {
-    if (closeOnClickOutside && modalRef.current && !modalRef.current.contains(e.target)) {
-      onClose();
-    }
-  };
-
-  // Determine the modal size class
-  const sizeClass = {
+  
+  // Determine modal size classes
+  const sizeClasses = {
     sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-full mx-4'
-  }[size] || 'max-w-lg';
-
-  // Don't render if modal is not open
+    md: 'max-w-2xl',
+    lg: 'max-w-4xl',
+    xl: 'max-w-6xl',
+    full: 'max-w-full'
+  };
+  
+  const modalSizeClass = sizeClasses[size] || sizeClasses.md;
+  
   if (!isOpen) return null;
-
-  // Create portal to render modal outside of the normal DOM hierarchy
+  
   return createPortal(
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-      onClick={handleBackdropClick}
-      aria-modal="true"
+      className="fixed inset-0 z-50 overflow-y-auto"
+      aria-labelledby="modal-title"
       role="dialog"
+      aria-modal="true"
     >
+      {/* Modal backdrop */}
       <div 
-        ref={modalRef}
-        className={`bg-white rounded-lg shadow-xl w-full ${sizeClass} relative overflow-hidden`}
-      >
-        {/* Modal header */}
-        {title && (
-          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-lg font-medium text-gray-900">{title}</h3>
-            {showCloseButton && (
-              <button
-                type="button"
-                className="text-gray-400 hover:text-gray-500 focus:outline-none"
-                onClick={onClose}
-                aria-label="Close"
-              >
-                <FiX className="h-5 w-5" />
-              </button>
-            )}
-          </div>
-        )}
-        
+        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        onClick={handleBackdropClick}
+      ></div>
+      
+      {/* Modal container for centering */}
+      <div className="flex items-end sm:items-center justify-center min-h-screen p-4 text-center sm:p-0">
         {/* Modal content */}
-        <div className={!title ? 'pt-5' : ''}>
+        <div 
+          ref={modalRef}
+          className={`relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 w-full ${modalSizeClass}`}
+        >
           {children}
         </div>
       </div>
@@ -97,11 +78,8 @@ const Modal = ({
 Modal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  title: PropTypes.node,
   children: PropTypes.node.isRequired,
-  size: PropTypes.oneOf(['sm', 'md', 'lg', 'xl', 'full']),
-  showCloseButton: PropTypes.bool,
-  closeOnClickOutside: PropTypes.bool
+  size: PropTypes.oneOf(['sm', 'md', 'lg', 'xl', 'full'])
 };
 
 export default Modal;
