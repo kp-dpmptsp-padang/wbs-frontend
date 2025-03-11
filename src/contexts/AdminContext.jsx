@@ -1,8 +1,7 @@
 // src/contexts/AdminContext.jsx
 import { createContext, useContext, useState, useCallback } from 'react';
-import { adminService } from '@/services';
+import adminService from '@/services/admin.service';
 import useApi from '@/hooks/useApi';
-import { useToast } from './ToastContext';
 
 // Membuat context untuk admin
 const AdminContext = createContext(null);
@@ -13,7 +12,6 @@ export const AdminProvider = ({ children }) => {
   const [adminReports, setAdminReports] = useState([]);
   const [overviewStats, setOverviewStats] = useState(null);
   const [reportStats, setReportStats] = useState(null);
-  const { showToast } = useToast();
   
   // Gunakan custom hook useApi
   const { loading: adminsLoading, execute: fetchAllAdmins } = useApi(adminService.getAllAdmins);
@@ -27,99 +25,179 @@ export const AdminProvider = ({ children }) => {
 
   // Fungsi untuk mendapatkan daftar admin
   const getAllAdmins = useCallback(async () => {
-    const result = await fetchAllAdmins();
-    if (result.success) {
-      setAdmins(result.data);
-    } else {
-      showToast('error', result.error);
+    try {
+      console.log('Fetching admin list...');
+      const result = await fetchAllAdmins();
+      console.log('Admin list fetch result:', result);
+      
+      if (result.success) {
+        // Pastikan data adalah array dan normalisasi struktur data
+        let adminData = [];
+        
+        if (Array.isArray(result.data)) {
+          adminData = result.data;
+        } else if (result.data?.data && Array.isArray(result.data.data)) {
+          adminData = result.data.data;
+        } else if (typeof result.data === 'object' && result.data !== null) {
+          // Jika data adalah objek tunggal, periksa struktur
+          if (result.data.data && Array.isArray(result.data.data)) {
+            // Jika objek memiliki properti data yang adalah array, gunakan array tersebut
+            adminData = result.data.data;
+          } else {
+            // Jika bukan, jadikan objek ini sebagai item tunggal dalam array
+            adminData = [result.data];
+          }
+        }
+        
+        // Normalisasi setiap item admin untuk memastikan properti yang diharapkan ada
+        const normalizedAdmins = adminData.map((admin, index) => {
+          // Log untuk melihat struktur asli
+          console.log(`Processing admin item ${index}:`, admin);
+          
+          // Jika admin memiliki properti 'data' yang berisi array, gunakan item pertama
+          if (admin.data && Array.isArray(admin.data) && admin.data.length > 0) {
+            const [id, name, email, role, createdAt] = admin.data;
+            console.log(`Extracted from admin.data array:`, { id, name, email, role, createdAt });
+            
+            return {
+              id: id || admin.id || index,
+              name: name || '',
+              email: email || '',
+              role: role || 'admin',
+              createdAt: createdAt || new Date().toISOString(),
+              // Salin properti lain dari data asli
+              ...admin
+            };
+          }
+          
+          // Normalisasi properti sesuai dengan yang diharapkan di UI
+          return {
+            id: admin.id || index,
+            name: admin.name || '',
+            email: admin.email || '',
+            role: admin.role || 'admin',
+            createdAt: admin.createdAt || admin.created_at || new Date().toISOString(),
+            // Salin properti lain dari data asli
+            ...admin
+          };
+        });
+        
+        console.log('Setting normalized admin list:', normalizedAdmins);
+        setAdmins(normalizedAdmins);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error fetching admins:', error);
+      return { success: false, error: 'Gagal memuat daftar admin' };
     }
-    return result;
-  }, [fetchAllAdmins, showToast]);
+  }, [fetchAllAdmins]);
 
   // Fungsi untuk membuat admin baru
   const createAdmin = useCallback(async (adminData) => {
-    const result = await executeCreateAdmin(adminData);
-    if (result.success) {
-      // Tambahkan admin baru ke state lokal
-      setAdmins(prev => [...prev, result.data]);
-      showToast('success', 'Admin berhasil dibuat');
-    } else {
-      showToast('error', result.error);
+    try {
+      console.log('Creating new admin with data:', adminData);
+      const result = await executeCreateAdmin(adminData);
+      console.log('Create admin result:', result);
+      
+      if (result.success) {
+        console.log('Admin created successfully, refreshing list...');
+        // Tambahkan admin baru ke state lokal atau refresh daftar admin
+        setTimeout(() => {
+          getAllAdmins();
+        }, 500); // Sedikit delay untuk memastikan data telah tersimpan di server
+      }
+      return result;
+    } catch (error) {
+      console.error('Error creating admin:', error);
+      return { success: false, error: 'Gagal membuat admin baru' };
     }
-    return result;
-  }, [executeCreateAdmin, showToast]);
+  }, [executeCreateAdmin, getAllAdmins]);
 
   // Fungsi untuk mengupdate admin
   const updateAdmin = useCallback(async (adminId, adminData) => {
-    const result = await executeUpdateAdmin(adminId, adminData);
-    if (result.success) {
-      // Update admin di state lokal
-      setAdmins(prev => 
-        prev.map(admin => 
-          admin.id === adminId ? result.data : admin
-        )
-      );
-      showToast('success', 'Admin berhasil diperbarui');
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await executeUpdateAdmin(adminId, adminData);
+      if (result.success) {
+        // Update admin di state lokal
+        setAdmins(prev => 
+          prev.map(admin => 
+            admin.id === adminId ? { ...admin, ...adminData } : admin
+          )
+        );
+      }
+      return result;
+    } catch (error) {
+      console.error('Error updating admin:', error);
+      return { success: false, error: 'Gagal memperbarui admin' };
     }
-    return result;
-  }, [executeUpdateAdmin, showToast]);
+  }, [executeUpdateAdmin]);
 
   // Fungsi untuk menghapus admin
   const deleteAdmin = useCallback(async (adminId) => {
-    const result = await executeDeleteAdmin(adminId);
-    if (result.success) {
-      // Hapus admin dari state lokal
-      setAdmins(prev => prev.filter(admin => admin.id !== adminId));
-      showToast('success', 'Admin berhasil dihapus');
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await executeDeleteAdmin(adminId);
+      if (result.success) {
+        // Hapus admin dari state lokal
+        setAdmins(prev => prev.filter(admin => admin.id !== adminId));
+      }
+      return result;
+    } catch (error) {
+      console.error('Error deleting admin:', error);
+      return { success: false, error: 'Gagal menghapus admin' };
     }
-    return result;
-  }, [executeDeleteAdmin, showToast]);
+  }, [executeDeleteAdmin]);
 
   // Fungsi untuk mendapatkan daftar laporan (admin view)
   const getAllReports = useCallback(async (params = {}) => {
-    const result = await fetchAllReports(params);
-    if (result.success) {
-      setAdminReports(result.data);
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await fetchAllReports(params);
+      if (result.success) {
+        setAdminReports(result.data);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      return { success: false, error: 'Gagal memuat daftar laporan' };
     }
-    return result;
-  }, [fetchAllReports, showToast]);
+  }, [fetchAllReports]);
 
   // Fungsi untuk mendapatkan detail laporan (admin view)
   const getReportById = useCallback(async (reportId) => {
-    const result = await fetchReportById(reportId);
-    if (!result.success) {
-      showToast('error', result.error);
+    try {
+      return await fetchReportById(reportId);
+    } catch (error) {
+      console.error('Error fetching report:', error);
+      return { success: false, error: 'Gagal memuat detail laporan' };
     }
-    return result;
-  }, [fetchReportById, showToast]);
+  }, [fetchReportById]);
 
   // Fungsi untuk mendapatkan statistik overview
   const getOverviewStats = useCallback(async () => {
-    const result = await fetchOverviewStats();
-    if (result.success) {
-      setOverviewStats(result.data);
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await fetchOverviewStats();
+      if (result.success) {
+        setOverviewStats(result.data);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      return { success: false, error: 'Gagal memuat statistik' };
     }
-    return result;
-  }, [fetchOverviewStats, showToast]);
+  }, [fetchOverviewStats]);
 
   // Fungsi untuk mendapatkan statistik laporan
   const getReportStats = useCallback(async () => {
-    const result = await fetchReportStats();
-    if (result.success) {
-      setReportStats(result.data);
-    } else {
-      showToast('error', result.error);
+    try {
+      const result = await fetchReportStats();
+      if (result.success) {
+        setReportStats(result.data);
+      }
+      return result;
+    } catch (error) {
+      console.error('Error fetching report stats:', error);
+      return { success: false, error: 'Gagal memuat statistik laporan' };
     }
-    return result;
-  }, [fetchReportStats, showToast]);
+  }, [fetchReportStats]);
 
   // Nilai yang akan disediakan oleh context
   const value = {
