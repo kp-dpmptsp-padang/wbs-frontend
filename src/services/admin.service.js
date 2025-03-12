@@ -10,7 +10,7 @@ const adminService = {
     try {
       const response = await api.get('/admin');
       return {
-        success: true,
+      success: true,
         data: response.data.data || []
       };
     } catch (error) {

@@ -7,11 +7,23 @@ import Badge from '@/components/common/Badge';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import Carousel, { CarouselSlide } from '@/components/common/Carousel';
+import CardSection from '@/components/common/CardSection'
 import Chart from '@/components/common/Chart';
 import ChatBubbles, { ChatBubble } from '@/components/common/ChatBubbles';
 import Checkbox from '@/components/common/Checkbox';
+import Clipboard from '@/components/common/Clipboard'; // Import the Clipboard component
+import DatePicker from '@/components/common/DatePicker'; // Import DatePicker
+import FileInput from '@/components/common/FileInput';
+import FileUpload from '@/components/common/FileUpload';
+import List, { ListItem } from '@/components/common/List';
+import RadioButton from '@/components/common/RadioButton';
+import RadioButtonGroup from '@/components/common/RadioButtonGroup';
 import Input from '@/components/common/Input';
+import Skeleton, {SkeletonItem, SkeletonText, SkeletonAvatar, SkeletonCard, SkeletonTable } from '@/components/common/Skeleton';
+import Spinner, { SpinnerOverlay, FullscreenSpinner, ButtonSpinner } from '@/components/common/Spinner';
 import TextArea from '@/components/common/TextArea';
+import Table from '@/components/common/Table';
+import Toast, { ToastContainer, useToast } from '@/components/common/Toast'; 
 
 // import CheckboxGroup from '@/components/common/CheckboxGroup';
 
@@ -22,6 +34,7 @@ import ReportCard from '@/components/user/ReportCard';
 export default function Demo() {
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState('buttons');
+  const [selectedDate, setSelectedDate] = useState('');
   
   const simulateLoading = () => {
     setLoading(true);
@@ -35,6 +48,7 @@ export default function Demo() {
       items: [
         { id: 'buttons', name: 'Buttons' },
         { id: 'badges', name: 'Badges' },
+        { id: 'clipboards', name: 'Clipboards' }, // Added Clipboards section
         { id: 'alerts', name: 'Alerts' },
         { id: 'avatars', name: 'Avatars' },
         { id: 'logos', name: 'Logo' },
@@ -49,6 +63,7 @@ export default function Demo() {
         { id: 'selects', name: 'Select Dropdowns' },
         { id: 'textareas', name: 'Text Areas' },
         { id: 'datePickers', name: 'Date Pickers' },
+        { id: 'fileInputs', name: 'File Inputs' },
         { id: 'fileUploads', name: 'File Uploads' },
       ]
     },
@@ -70,7 +85,7 @@ export default function Demo() {
         { id: 'spinners', name: 'Spinners' },
         { id: 'loadings', name: 'Loading Indicators' },
         { id: 'toasts', name: 'Toast Notifications' },
-        { id: 'skeletons', name: 'Skeletons' },
+        { id: 'skeletons', name: 'Skeletons' }, // Add this line
         { id: 'statusIndicators', name: 'Status Indicators' },
       ]
     },
@@ -102,6 +117,7 @@ export default function Demo() {
           <>
             {renderCardsSection()}
             {renderSpecializedCardsSection()}
+            {renderCardSectionDemo()}
           </>
         );
       case 'carousel':
@@ -112,13 +128,32 @@ export default function Demo() {
         return renderChatBubblesSection();
       case 'checkboxes':
         return renderCheckboxesSection();
+      case 'clipboards':
+        return renderClipboardsSection();
+      case 'datePickers': // Add DatePickers case
+        return renderDatePickersSection();
+      case 'fileInputs':
+        return renderFileInputsSection();
+      case 'fileUploads':
+        return renderFileUploadsSection();
+      case 'lists':
+        return renderListsSection();
+      case 'radioButtons':
+        return renderRadioButtonsSection();
       case 'inputs':
         return renderInputsSection();
+      case 'skeletons':
+        return renderSkeletonsSection();
+      case 'spinners':
+        return renderSpinnersSection();
       case 'textareas':
         return renderTextAreasSection();
-
       case 'logos':
         return renderLogosSection();
+      case 'tables':
+        return renderTablesSection();
+      case 'toasts':
+        return renderToastsSection();
       
       // Add more cases for other components
       default:
@@ -1153,6 +1188,397 @@ export default function Demo() {
     );
   };
 
+  const renderCardSectionDemo = () => {
+    // Sample cards data
+    const apiCards = [
+      {
+        id: 1,
+        bgColor: 'bg-blue-600',
+        image: (
+          <svg className="size-28" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="56" height="56" rx="10" fill="white"/>
+            <path d="M20.2819 26.7478C20.1304 26.5495 19.9068 26.4194 19.6599 26.386C19.4131 26.3527 19.1631 26.4188 18.9647 26.5698C18.848 26.6622 18.7538 26.78 18.6894 26.9144L10.6019 43.1439C10.4874 43.3739 10.4686 43.6401 10.5496 43.884C10.6307 44.1279 10.805 44.3295 11.0342 44.4446C11.1681 44.5126 11.3163 44.5478 11.4664 44.5473H22.7343C22.9148 44.5519 23.0927 44.5037 23.2462 44.4084C23.3998 44.3132 23.5223 44.1751 23.5988 44.011C26.0307 38.9724 24.5566 31.3118 20.2819 26.7478Z" fill="url(#paint0_linear_2204_541)"/>
+            <path d="M28.2171 11.9791C26.201 15.0912 25.026 18.6755 24.8074 22.3805C24.5889 26.0854 25.3342 29.7837 26.9704 33.1126L32.403 44.0113C32.4833 44.1724 32.6067 44.3079 32.7593 44.4026C32.912 44.4973 33.088 44.5475 33.2675 44.5476H44.5331C44.6602 44.5479 44.7861 44.523 44.9035 44.4743C45.0209 44.4257 45.1276 44.3543 45.2175 44.2642C45.3073 44.1741 45.3785 44.067 45.427 43.9492C45.4755 43.8314 45.5003 43.7052 45.5 43.5777C45.5001 43.4274 45.4659 43.2791 45.3999 43.1441L29.8619 11.9746C29.7881 11.8184 29.6717 11.6864 29.5261 11.594C29.3805 11.5016 29.2118 11.4525 29.0395 11.4525C28.8672 11.4525 28.6984 11.5016 28.5529 11.594C28.4073 11.6864 28.2908 11.8184 28.2171 11.9746V11.9791Z" fill="#2684FF"/>
+            <defs>
+            <linearGradient id="paint0_linear_2204_541" x1="24.734" y1="29.2284" x2="16.1543" y2="44.0429" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#0052CC"/>
+            <stop offset="0.92" stopColor="#2684FF"/>
+            </linearGradient>
+            </defs>
+          </svg>
+        ),
+        tag: 'Atlassian API',
+        tagColor: 'text-blue-600',
+        title: 'Atlassian',
+        description: 'A software that develops products for software developers and developments.',
+        actions: [
+          { text: 'View sample', href: '#' },
+          { text: 'View API', href: '#' }
+        ]
+      },
+      {
+        id: 2,
+        bgColor: 'bg-rose-500',
+        image: (
+          <svg className="size-28" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="56" height="56" rx="10" fill="white"/>
+            <g clipPath="url(#clip0_2204_541)">
+            <path d="M37.0409 28.8697C33.1968 28.8697 30.0811 31.9854 30.0811 35.8288C30.0811 39.6726 33.1968 42.789 37.0409 42.789C40.8843 42.789 44 39.6726 44 35.8288C44 31.9854 40.8843 28.8697 37.0409 28.8697ZM18.9594 28.8701C15.116 28.8704 12 31.9854 12 35.8292C12 39.6726 15.116 42.7886 18.9594 42.7886C22.8032 42.7886 25.9192 39.6726 25.9192 35.8292C25.9192 31.9854 22.8032 28.8701 18.9591 28.8701H18.9594ZM34.9595 20.1704C34.9595 24.0138 31.8438 27.1305 28.0004 27.1305C24.1563 27.1305 21.0406 24.0138 21.0406 20.1704C21.0406 16.3269 24.1563 13.2109 28.0003 13.2109C31.8438 13.2109 34.9591 16.3269 34.9591 20.1704H34.9595Z" fill="url(#paint0_radial_2204_541)"/>
+            </g>
+            <defs>
+            <radialGradient id="paint0_radial_2204_541" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(28.0043 29.3944) scale(21.216 19.6102)">
+            <stop offset="0%" stopColor="#FFB900"/>
+            <stop offset="0.6" stopColor="#F95D8F"/>
+            <stop offset="0.999" stopColor="#F95353"/>
+            </radialGradient>
+            <clipPath id="clip0_2204_541">
+            <rect width="32" height="29.5808" fill="white" transform="translate(12 13.2096)"/>
+            </clipPath>
+            </defs>
+          </svg>
+        ),
+        tag: 'Asana API',
+        tagColor: 'text-rose-600',
+        title: 'Asana',
+        description: 'Track tasks and projects, use agile boards, measure progress.',
+        actions: [
+          { text: 'View sample', href: '#' },
+          { text: 'View API', href: '#' }
+        ]
+      },
+      {
+        id: 3,
+        bgColor: 'bg-amber-500',
+        image: (
+          <svg className="size-28" width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="56" height="56" rx="10" fill="white"/>
+            <path fillRule="evenodd" clipRule="evenodd" d="M23.7326 11.968C21.9637 11.9693 20.5321 13.4049 20.5334 15.1738C20.5321 16.9427 21.965 18.3782 23.7339 18.3795H26.9345V15.1751C26.9358 13.4062 25.5029 11.9706 23.7326 11.968C23.7339 11.968 23.7339 11.968 23.7326 11.968M23.7326 20.5184H15.2005C13.4316 20.5197 11.9987 21.9553 12 23.7242C11.9974 25.4931 13.4303 26.9286 15.1992 26.9312H23.7326C25.5016 26.9299 26.9345 25.4944 26.9332 23.7255C26.9345 21.9553 25.5016 20.5197 23.7326 20.5184V20.5184Z" fill="#36C5F0"/>
+            <path fillRule="evenodd" clipRule="evenodd" d="M44.0001 23.7242C44.0014 21.9553 42.5684 20.5197 40.7995 20.5184C39.0306 20.5197 37.5977 21.9553 37.599 23.7242V26.9312H40.7995C42.5684 26.9299 44.0014 25.4944 44.0001 23.7242ZM35.4666 23.7242V15.1738C35.4679 13.4062 34.0363 11.9706 32.2674 11.968C30.4985 11.9693 29.0656 13.4049 29.0669 15.1738V23.7242C29.0643 25.4931 30.4972 26.9286 32.2661 26.9312C34.035 26.9299 35.4679 25.4944 35.4666 23.7242Z" fill="#2EB67D"/>
+            <path fillRule="evenodd" clipRule="evenodd" d="M32.2661 44.0322C34.035 44.0309 35.4679 42.5953 35.4666 40.8264C35.4679 39.0575 34.035 37.622 32.2661 37.6207H29.0656V40.8264C29.0642 42.594 30.4972 44.0295 32.2661 44.0322ZM32.2661 35.4804H40.7995C42.5684 35.4791 44.0013 34.0436 44 32.2747C44.0026 30.5058 42.5697 29.0702 40.8008 29.0676H32.2674C30.4985 29.0689 29.0656 30.5045 29.0669 32.2734C29.0656 34.0436 30.4972 35.4791 32.2661 35.4804V35.4804Z" fill="#ECB22E"/>
+            <path fillRule="evenodd" clipRule="evenodd" d="M12 32.2746C11.9987 34.0435 13.4316 35.479 15.2005 35.4804C16.9694 35.479 18.4024 34.0435 18.401 32.2746V29.0688H15.2005C13.4316 29.0702 11.9987 30.5057 12 32.2746ZM20.5334 32.2746V40.825C20.5308 42.5939 21.9637 44.0295 23.7326 44.0321C25.5016 44.0308 26.9345 42.5952 26.9332 40.8263V32.2772C26.9358 30.5083 25.5029 29.0728 23.7339 29.0702C21.9637 29.0702 20.5321 30.5057 20.5334 32.2746C20.5334 32.2759 20.5334 32.2746 20.5334 32.2746Z" fill="#E01E5A"/>
+          </svg>
+        ),
+        tag: 'Slack API',
+        tagColor: 'text-amber-500',
+        title: 'Slack',
+        description: 'Email collaboration and email service desk made easy.',
+        actions: [
+          { text: 'View sample', href: '#' },
+          { text: 'View API', href: '#' }
+        ]
+      }
+    ];
+  
+    // WBS themed cards
+    const wbsCards = [
+      {
+        id: 1,
+        bgColor: 'bg-primary',
+        image: <div className="text-white text-5xl font-bold flex items-center justify-center h-full">WBS</div>,
+        tag: 'Pelaporan',
+        tagColor: 'text-primary',
+        title: 'Buat Laporan',
+        description: 'Laporkan dugaan pelanggaran atau penyimpangan yang terjadi di lingkungan DPMPTSP.',
+        actions: [
+          { text: 'Buat Laporan', href: '/report/create' }
+        ]
+      },
+      {
+        id: 2,
+        bgColor: 'bg-secondary',
+        image: <div className="text-white text-5xl font-bold flex items-center justify-center h-full">FAQ</div>,
+        tag: 'Informasi',
+        tagColor: 'text-secondary',
+        title: 'Tanya Jawab',
+        description: 'Temukan jawaban atas pertanyaan umum seputar Whistle Blowing System.',
+        actions: [
+          { text: 'Lihat FAQ', href: '/faq' }
+        ]
+      },
+      {
+        id: 3,
+        bgColor: 'bg-success',
+        image: <div className="text-white text-5xl font-bold flex items-center justify-center h-full">CEK</div>,
+        tag: 'Status',
+        tagColor: 'text-success',
+        title: 'Cek Status Laporan',
+        description: 'Pantau status laporan yang telah Anda kirimkan melalui sistem WBS.',
+        actions: [
+          { text: 'Cek Status', href: '/report/status' }
+        ]
+      }
+    ];
+  
+    // Image cards
+    const imageCards = [
+      {
+        id: 1,
+        image: 'https://images.unsplash.com/photo-1633613286991-611fe299c4be?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
+        title: 'Transparansi',
+        description: 'Membangun tata kelola yang transparan dan akuntabel.',
+        actions: [
+          { text: 'Pelajari Lebih Lanjut', href: '#' }
+        ]
+      },
+      {
+        id: 2,
+        image: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
+        title: 'Integritas',
+        description: 'Komitmen terhadap nilai-nilai integritas dan kejujuran dalam pelayanan publik.',
+        actions: [
+          { text: 'Pelajari Lebih Lanjut', href: '#' }
+        ]
+      },
+      {
+        id: 3,
+        image: 'https://images.unsplash.com/photo-1521791055366-0d553872125f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
+        title: 'Akuntabilitas',
+        description: 'Memastikan pertanggungjawaban dalam setiap kebijakan dan tindakan.',
+        actions: [
+          { text: 'Pelajari Lebih Lanjut', href: '#' }
+        ]
+      }
+    ];
+    
+    // Simple cards without images
+    const simpleCards = [
+      {
+        id: 1,
+        tag: 'Dokumentasi',
+        tagColor: 'text-blue-600',
+        title: 'Panduan Pengguna',
+        description: 'Temukan cara menggunakan sistem Whistle Blowing dengan mudah dan efektif.',
+        actions: [
+          { text: 'Baca Panduan', href: '#' }
+        ]
+      },
+      {
+        id: 2,
+        tag: 'Regulasi',
+        tagColor: 'text-green-600',
+        title: 'Dasar Hukum',
+        description: 'Informasi mengenai peraturan dan dasar hukum yang melandasi sistem WBS.',
+        actions: [
+          { text: 'Lihat Regulasi', href: '#' }
+        ]
+      },
+      {
+        id: 3,
+        tag: 'Keamanan',
+        tagColor: 'text-red-600',
+        title: 'Kerahasiaan Data',
+        description: 'Kebijakan perlindungan data dan kerahasiaan identitas pelapor.',
+        actions: [
+          { text: 'Pelajari Kebijakan', href: '#' }
+        ]
+      }
+    ];
+  
+    // Custom styled cards with different border and shadow
+    const customStyledCards = [
+      {
+        id: 1,
+        title: 'Alur Pelaporan',
+        description: 'Proses pelaporan mulai dari pengisian formulir hingga penyelesaian kasus.',
+        content: (
+          <div className="mt-4">
+            <ol className="space-y-2">
+              <li className="flex items-center">
+                <span className="bg-blue-100 text-blue-800 font-medium mr-2 px-2.5 py-0.5 rounded-full">1</span>
+                <span>Isi formulir laporan</span>
+              </li>
+              <li className="flex items-center">
+                <span className="bg-blue-100 text-blue-800 font-medium mr-2 px-2.5 py-0.5 rounded-full">2</span>
+                <span>Verifikasi oleh admin</span>
+              </li>
+              <li className="flex items-center">
+                <span className="bg-blue-100 text-blue-800 font-medium mr-2 px-2.5 py-0.5 rounded-full">3</span>
+                <span>Proses penyelidikan</span>
+              </li>
+              <li className="flex items-center">
+                <span className="bg-blue-100 text-blue-800 font-medium mr-2 px-2.5 py-0.5 rounded-full">4</span>
+                <span>Penyelesaian kasus</span>
+              </li>
+            </ol>
+          </div>
+        ),
+        actions: [
+          { text: 'Lihat Detail', href: '#' }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Statistik Laporan',
+        description: 'Data statistik laporan yang telah masuk dan diselesaikan.',
+        content: (
+          <div className="mt-4 space-y-3">
+            <div className="flex justify-between">
+              <span>Total Laporan</span>
+              <span className="font-semibold">124</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Dalam Proses</span>
+              <span className="font-semibold">36</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Selesai</span>
+              <span className="font-semibold">82</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Ditolak</span>
+              <span className="font-semibold">6</span>
+            </div>
+          </div>
+        ),
+        actions: [
+          { text: 'Lihat Statistik Lengkap', href: '#' }
+        ]
+      },
+      {
+        id: 3,
+        title: 'Tim Pengelola',
+        description: 'Informasi tentang tim yang mengelola sistem Whistle Blowing.',
+        content: (
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-gray-200 mr-3"></div>
+              <div>
+                <div className="font-medium">Admin Verifikator</div>
+                <div className="text-sm text-gray-500">Verifikasi awal laporan</div>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-gray-200 mr-3"></div>
+              <div>
+                <div className="font-medium">Tim Investigasi</div>
+                <div className="text-sm text-gray-500">Menindaklanjuti laporan</div>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-gray-200 mr-3"></div>
+              <div>
+                <div className="font-medium">Pimpinan</div>
+                <div className="text-sm text-gray-500">Pengambilan keputusan</div>
+              </div>
+            </div>
+          </div>
+        ),
+        actions: [
+          { text: 'Lihat Struktur Organisasi', href: '#' }
+        ]
+      }
+    ];
+  
+    return (
+      <div className="space-y-16">
+        {/* API Integration Cards Demo */}
+        <div className="border p-4 rounded-lg">
+          <h2 className="text-lg font-semibold mb-4">API Integration Cards Example</h2>
+          <CardSection 
+            title="API Integrations"
+            subtitle="Connect with third-party services through our API integrations"
+            cards={apiCards}
+            columns={3}
+            rounded="xl"
+            shadow="2xs"
+          />
+        </div>
+  
+        {/* WBS Themed Cards Demo */}
+        <div className="border p-4 rounded-lg">
+          <h2 className="text-lg font-semibold mb-4">WBS Themed Cards Example</h2>
+          <CardSection 
+            title="Whistle Blowing System"
+            subtitle="Sistem pelaporan pelanggaran untuk mewujudkan tata kelola yang bersih"
+            cards={wbsCards}
+            columns={3}
+            padding="default"
+          />
+        </div>
+  
+        {/* Image Cards Demo */}
+        <div className="border p-4 rounded-lg">
+          <h2 className="text-lg font-semibold mb-4">Image Cards Example</h2>
+          <CardSection 
+            title="Nilai-Nilai Kami"
+            subtitle="Prinsip yang mendasari Whistle Blowing System"
+            cards={imageCards}
+            columns={3}
+            gap={8}
+            rounded="lg"
+          />
+        </div>
+  
+        {/* Simple Cards Without Images */}
+        <div className="border p-4 rounded-lg">
+          <h2 className="text-lg font-semibold mb-4">Simple Cards (No Images)</h2>
+          <CardSection 
+            title="Informasi Tambahan"
+            subtitle="Temukan berbagai informasi penting terkait Whistle Blowing System"
+            cards={simpleCards}
+            columns={3}
+            shadow="md"
+            padding="small"
+          />
+        </div>
+  
+        {/* Custom Styled Cards */}
+        <div className="border p-4 rounded-lg">
+          <h2 className="text-lg font-semibold mb-4">Custom Styled Cards</h2>
+          <CardSection 
+            title="Informasi Sistem"
+            subtitle="Pelajari lebih lanjut tentang sistem Whistle Blowing"
+            cards={customStyledCards}
+            columns={3}
+            rounded="md"
+            shadow="lg"
+            border={true}
+            bodyClassName="p-5"
+            cardClassName="hover:border-primary transition-colors duration-300"
+          />
+        </div>
+  
+        {/* Single Column Layout */}
+        <div className="border p-4 rounded-lg">
+          <h2 className="text-lg font-semibold mb-4">Single Column Layout</h2>
+          <CardSection 
+            title="Kontak Kami"
+            subtitle="Hubungi kami untuk informasi lebih lanjut"
+            cards={[{
+              id: 1,
+              bgColor: 'bg-indigo-500',
+              image: <div className="text-white text-5xl font-bold flex items-center justify-center h-full">📞</div>,
+              title: "Kontak Layanan WBS",
+              description: "Silakan hubungi kami melalui telepon, email, atau kunjungi kantor kami untuk informasi lebih lanjut tentang sistem Whistle Blowing.",
+              content: (
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                    <span>(+62) 123-4567-890</span>
+                  </div>
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+                    <span>wbs@dpmptsp.example.com</span>
+                  </div>
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path></svg>
+                    <span>Jl. Contoh No. 123, Kota Padang</span>
+                  </div>
+                </div>
+              ),
+              actions: [
+                { text: 'Kirim Pesan', href: '/contact' }
+              ]
+            }]}
+            columns={1}
+            rounded="xl"
+            maxWidth="60rem"
+          />
+        </div>
+      </div>
+    );
+  };
+
   const renderCarouselsSection = () => (
     <section>
       <div className="space-y-10">
@@ -1797,6 +2223,648 @@ export default function Demo() {
     );
   };
 
+  // New render function for Clipboards section
+  const renderClipboardsSection = () => (
+    <section>
+      <div className="space-y-6">
+        {/* Basic Clipboard Examples */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Basic Clipboard Buttons</h3>
+          <div className="flex flex-wrap gap-3">
+            <Clipboard 
+              value="npm install preline" 
+              displayText="$ npm install preline" 
+              monospace={true}
+            />
+            
+            <Clipboard 
+              value="yarn add preline" 
+              displayText="$ yarn add preline" 
+              monospace={true}
+              variant="gray"
+            />
+            
+            <Clipboard 
+              value="pnpm add preline" 
+              displayText="$ pnpm add preline" 
+              monospace={true}
+              variant="primary"
+              successText="Command copied!"
+            />
+          </div>
+        </div>
+        
+        {/* Clipboard Variants */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Clipboard Variants</h3>
+          <div className="flex flex-wrap gap-3">
+            <Clipboard 
+              value="Default variant"
+              variant="default"
+            />
+            
+            <Clipboard 
+              value="Primary variant"
+              variant="primary"
+            />
+            
+            <Clipboard 
+              value="Outline primary variant"
+              variant="outline-primary"
+            />
+            
+            <Clipboard 
+              value="Ghost primary variant"
+              variant="ghost-primary"
+            />
+            
+            <Clipboard 
+              value="Secondary variant"
+              variant="secondary"
+            />
+            
+            <Clipboard 
+              value="Outline secondary variant"
+              variant="outline-secondary"
+            />
+          </div>
+        </div>
+        
+        {/* Clipboard Sizes */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Clipboard Sizes</h3>
+          <div className="flex flex-wrap items-center gap-3">
+            <Clipboard 
+              value="Small size"
+              size="sm"
+            />
+            
+            <Clipboard 
+              value="Medium size (default)"
+              size="md"
+            />
+            
+            <Clipboard 
+              value="Large size"
+              size="lg"
+            />
+          </div>
+        </div>
+        
+        {/* Clipboard with Different Tooltip Positions */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Tooltip Positions</h3>
+          <div className="flex flex-wrap gap-3">
+            <Clipboard 
+              value="Tooltip at top"
+              tooltipPosition="top"
+              tooltipVisible={true}
+            />
+            
+            <Clipboard 
+              value="Tooltip at bottom"
+              tooltipPosition="bottom"
+              tooltipVisible={true}
+            />
+            
+            <Clipboard 
+              value="Tooltip at left"
+              tooltipPosition="left"
+              tooltipVisible={true}
+            />
+            
+            <Clipboard 
+              value="Tooltip at right"
+              tooltipPosition="right"
+              tooltipVisible={true}
+            />
+          </div>
+        </div>
+        
+        {/* Custom Clipboard Examples */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Custom Examples</h3>
+          <div className="flex flex-wrap gap-4">
+            <Clipboard 
+              value="API_KEY=YOUR_SECRET_API_KEY"
+              displayText="Copy API key" 
+              variant="primary"
+              successText="API key copied to clipboard!"
+              tooltipDuration={3000}
+            />
+            
+            <Clipboard 
+              value="https://example.com/document/share/abc123"
+              displayText="Copy share link" 
+              variant="outline-primary"
+              successText="Link copied!"
+            />
+            
+            <div className="flex items-center p-3 bg-gray-100 rounded-lg w-full max-w-md">
+              <span className="text-sm text-gray-700 mr-2 truncate">
+                example-document-id-123456.pdf
+              </span>
+              <Clipboard 
+                value="example-document-id-123456.pdf"
+                displayText="Copy ID"
+                variant="ghost-primary" 
+                size="sm"
+                className="ml-auto"
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* Disabled Clipboard */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Disabled State</h3>
+          <div className="flex flex-wrap gap-3">
+            <Clipboard 
+              value="This cannot be copied"
+              disabled={true}
+            />
+            
+            <Clipboard 
+              value="This cannot be copied"
+              variant="primary"
+              disabled={true}
+            />
+          </div>
+        </div>
+        
+        {/* Without Copy Icon */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Without Copy Icon</h3>
+          <div className="flex flex-wrap gap-3">
+            <Clipboard 
+              value="Click to copy text"
+              showCopyIcon={false}
+            />
+            
+            <Clipboard 
+              value="Click to copy without icon"
+              variant="primary"
+              showCopyIcon={false}
+            />
+          </div>
+        </div>
+        
+        {/* Clipboard with Event Handling */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">With Event Handling</h3>
+          <div className="flex flex-wrap gap-3">
+            <Clipboard 
+              value="Event-handling clipboard"
+              onCopy={(text) => alert(`Copied: ${text}`)}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  // DatePicker section
+  const renderDatePickersSection = () => (
+    <section>
+      <div className="space-y-6">
+        {/* Basic DatePicker */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Basic DatePicker</h3>
+          <div className="max-w-sm space-y-4">
+            <div>
+              <label htmlFor="basic-datepicker" className="block text-sm font-medium text-gray-700 mb-1">
+                Default DatePicker
+              </label>
+              <DatePicker
+                id="basic-datepicker"
+                placeholderText="Select a date"
+                value={selectedDate}
+                onChange={(dateStr, date) => {
+                  console.log('Selected date:', dateStr);
+                  setSelectedDate(dateStr);
+                }}
+              />
+              {selectedDate && (
+                <p className="mt-2 text-sm text-gray-600">
+                  Selected date: {selectedDate}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* DatePicker with Min/Max Date */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">DatePicker with Min/Max Date</h3>
+          <div className="max-w-sm space-y-4">
+            <div>
+              <label htmlFor="range-datepicker" className="block text-sm font-medium text-gray-700 mb-1">
+                Select a date (limited range)
+              </label>
+              <DatePicker
+                id="range-datepicker"
+                placeholderText="Select a date"
+                minDate="2023-01-01"
+                maxDate="2023-12-31"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Only dates in 2023 can be selected
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Custom Format DatePicker */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Custom Format DatePicker</h3>
+          <div className="max-w-sm space-y-4">
+            <div>
+              <label htmlFor="format-datepicker" className="block text-sm font-medium text-gray-700 mb-1">
+                Custom Format (yyyy-MM-dd)
+              </label>
+              <DatePicker
+                id="format-datepicker"
+                dateFormat="yyyy-MM-dd"
+                placeholderText="YYYY-MM-DD"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Disabled DatePicker */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Disabled State</h3>
+          <div className="max-w-sm">
+            <DatePicker
+              disabled
+              placeholderText="DatePicker disabled"
+            />
+          </div>
+        </div>
+
+        {/* With Custom Year Range */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">With Custom Year Range</h3>
+          <div className="max-w-sm">
+            <DatePicker
+              yearRange={10}
+              placeholderText="Year range: ±10 years"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  // Add the renderFileInputsSection function
+  const renderFileInputsSection = () => (
+    <section>
+      <div className="space-y-6">
+        {/* Basic FileInput */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Basic File Input</h3>
+          <div className="max-w-sm">
+            <FileInput 
+              label="Choose file"
+              id="basic-file-input"
+              name="basic-file"
+            />
+          </div>
+        </div>
+        
+        {/* File Input Sizes */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">File Input Sizes</h3>
+          <div className="space-y-3 max-w-sm">
+            <FileInput 
+              label="Small size"
+              size="sm"
+            />
+            
+            <FileInput 
+              label="Medium size (default)"
+              size="md"
+            />
+            
+            <FileInput 
+              label="Large size"
+              size="lg"
+            />
+          </div>
+        </div>
+        
+        {/* File Input Button Variations */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Button Variations</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FileInput 
+              label="Default button"
+              buttonClassName="default"
+            />
+            
+            <FileInput 
+              label="Primary button"
+              buttonClassName="primary"
+            />
+            
+            <FileInput 
+              label="Secondary button"
+              buttonClassName="secondary"
+            />
+            
+            <FileInput 
+              label="Outline button"
+              buttonClassName="outline"
+            />
+            
+            <FileInput 
+              label="Ghost button"
+              buttonClassName="ghost"
+            />
+          </div>
+        </div>
+        
+        {/* File Input with Restrictions */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">With File Type Restrictions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FileInput 
+              label="Images only"
+              accept="image/*"
+              helperText="Accepts all image formats (jpg, png, etc.)"
+            />
+            
+            <FileInput 
+              label="Documents only"
+              accept=".pdf,.doc,.docx"
+              helperText="Accepts PDF and Word documents"
+            />
+          </div>
+        </div>
+        
+        {/* Multiple File Input */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Multiple File Selection</h3>
+          <div className="max-w-sm">
+            <FileInput 
+              label="Select multiple files"
+              multiple
+              helperText="You can select multiple files at once"
+            />
+          </div>
+        </div>
+        
+        {/* FileInput States */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Input States</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FileInput 
+              label="Required file input"
+              required
+              helperText="This field is required"
+            />
+            
+            <FileInput 
+              label="Disabled file input"
+              disabled
+              helperText="This input is disabled"
+            />
+            
+            <FileInput 
+              label="With error message"
+              error="Please select a valid file"
+              variant="error"
+            />
+            
+            <FileInput 
+              label="Success state"
+              variant="success"
+              helperText="File type is valid"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  // Add the renderListsSection function
+  const renderListsSection = () => (
+    <section>
+      <div className="space-y-6">
+        {/* Basic Lists */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Basic Lists</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <span className="font-medium text-sm text-gray-500 font-mono mb-3 block">list-disc</span>
+              <List variant="disc">
+                <ListItem>Now this is a story all about how, my life got flipped turned upside down</ListItem>
+                <ListItem>And I like to take a minute and sit right here</ListItem>
+                <ListItem>I'll tell you how I became the prince of a town called Bel-Air</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 font-mono mb-3 block">list-decimal</span>
+              <List type="ol" variant="decimal">
+                <ListItem>Now this is a story all about how, my life got flipped turned upside down</ListItem>
+                <ListItem>And I like to take a minute and sit right here</ListItem>
+                <ListItem>I'll tell you how I became the prince of a town called Bel-Air</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 font-mono mb-3 block">list-none</span>
+              <List variant="none">
+                <ListItem>Now this is a story all about how, my life got flipped turned upside down</ListItem>
+                <ListItem>And I like to take a minute and sit right here</ListItem>
+                <ListItem>I'll tell you how I became the prince of a town called Bel-Air</ListItem>
+              </List>
+            </div>
+          </div>
+        </div>
+        
+        {/* Other List Types */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Other List Types</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <span className="font-medium text-sm text-gray-500 font-mono mb-3 block">list-circle</span>
+              <List variant="circle">
+                <ListItem>Coffee</ListItem>
+                <ListItem>Tea</ListItem>
+                <ListItem>Milk</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 font-mono mb-3 block">list-square</span>
+              <List variant="square">
+                <ListItem>Apple</ListItem>
+                <ListItem>Banana</ListItem>
+                <ListItem>Orange</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 font-mono mb-3 block">list-alpha</span>
+              <List type="ol" variant="alpha">
+                <ListItem>First item</ListItem>
+                <ListItem>Second item</ListItem>
+                <ListItem>Third item</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 font-mono mb-3 block">list-roman</span>
+              <List type="ol" variant="roman">
+                <ListItem>First item</ListItem>
+                <ListItem>Second item</ListItem>
+                <ListItem>Third item</ListItem>
+              </List>
+            </div>
+          </div>
+        </div>
+        
+        {/* List Sizes */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">List Sizes</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <span className="font-medium text-sm text-gray-500 mb-3 block">Small Size</span>
+              <List variant="disc" size="sm">
+                <ListItem>Small sized list item</ListItem>
+                <ListItem>Another small item</ListItem>
+                <ListItem>Third small item</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 mb-3 block">Medium Size (Default)</span>
+              <List variant="disc" size="md">
+                <ListItem>Medium sized list item</ListItem>
+                <ListItem>Another medium item</ListItem>
+                <ListItem>Third medium item</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 mb-3 block">Large Size</span>
+              <List variant="disc" size="lg">
+                <ListItem>Large sized list item</ListItem>
+                <ListItem>Another large item</ListItem>
+                <ListItem>Third large item</ListItem>
+              </List>
+            </div>
+          </div>
+        </div>
+        
+        {/* List Spacing */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">List Spacing</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <span className="font-medium text-sm text-gray-500 mb-3 block">Tight Spacing</span>
+              <List variant="disc" spacing="tight">
+                <ListItem>Tight spaced item</ListItem>
+                <ListItem>Another tight item</ListItem>
+                <ListItem>Third tight item</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 mb-3 block">Normal Spacing (Default)</span>
+              <List variant="disc" spacing="normal">
+                <ListItem>Normal spaced item</ListItem>
+                <ListItem>Another normal item</ListItem>
+                <ListItem>Third normal item</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 mb-3 block">Loose Spacing</span>
+              <List variant="disc" spacing="loose">
+                <ListItem>Loose spaced item</ListItem>
+                <ListItem>Another loose item</ListItem>
+                <ListItem>Third loose item</ListItem>
+              </List>
+            </div>
+          </div>
+        </div>
+        
+        {/* Marker Position */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Marker Position</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="border-r border-gray-200 pr-6">
+              <span className="font-medium text-sm text-gray-500 mb-3 block">Inside (Default)</span>
+              <List variant="disc" marker="inside">
+                <ListItem>This is a longer list item to demonstrate how the text wraps when the marker is positioned inside</ListItem>
+                <ListItem>Another list item with the marker inside</ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <span className="font-medium text-sm text-gray-500 mb-3 block">Outside</span>
+              <List variant="disc" marker="outside">
+                <ListItem>This is a longer list item to demonstrate how the text wraps when the marker is positioned outside</ListItem>
+                <ListItem>Another list item with the marker outside</ListItem>
+              </List>
+            </div>
+          </div>
+        </div>
+        
+        {/* Styled List */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Custom Styled Lists</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <List 
+                variant="none" 
+                spacing="loose"
+                className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                itemClassName="flex items-start gap-2"
+              >
+                <ListItem>
+                  <span className="inline-flex items-center justify-center size-5 rounded-full bg-primary-light text-white text-xs font-medium mt-0.5">1</span>
+                  <span>First step of the process with custom styling</span>
+                </ListItem>
+                <ListItem>
+                  <span className="inline-flex items-center justify-center size-5 rounded-full bg-primary-light text-white text-xs font-medium mt-0.5">2</span>
+                  <span>Second step with nice formatting</span>
+                </ListItem>
+                <ListItem>
+                  <span className="inline-flex items-center justify-center size-5 rounded-full bg-primary-light text-white text-xs font-medium mt-0.5">3</span>
+                  <span>Final step of the process</span>
+                </ListItem>
+              </List>
+            </div>
+            
+            <div>
+              <List 
+                variant="none" 
+                className="space-y-2"
+              >
+                <ListItem className="flex items-center gap-3 p-3 bg-success/10 text-success rounded-lg border border-success/20">
+                  <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                  Proper document formatting
+                </ListItem>
+                <ListItem className="flex items-center gap-3 p-3 bg-warning/10 text-warning rounded-lg border border-warning/20">
+                  <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+                  Evidence submission guidelines
+                </ListItem>
+                <ListItem className="flex items-center gap-3 p-3 bg-danger/10 text-danger rounded-lg border border-danger/20">
+                  <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                  Information to avoid including
+                </ListItem>
+              </List>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
   const renderLogosSection = () => {
     return (
       <section>
@@ -1962,6 +3030,271 @@ export default function Demo() {
     );
   };
 
+  // Add state for radio examples
+  const [selectedOption, setSelectedOption] = useState('option1');
+  const [selectedColor, setSelectedColor] = useState('blue');
+  const [selectedSize, setSelectedSize] = useState('medium');
+
+  // Add the renderRadioButtonsSection function
+  const renderRadioButtonsSection = () => (
+    <section>
+      <div className="space-y-6">
+        {/* Basic Radio Buttons */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Basic Radio Buttons</h3>
+          <div className="space-y-2">
+            <RadioButton
+              name="demo-radio"
+              id="radio-1"
+              value="option1"
+              label="Default radio"
+              checked={selectedOption === 'option1'}
+              onChange={(e) => setSelectedOption(e.target.value)}
+            />
+            
+            <RadioButton
+              name="demo-radio"
+              id="radio-2"
+              value="option2"
+              label="Second option"
+              checked={selectedOption === 'option2'}
+              onChange={(e) => setSelectedOption(e.target.value)}
+            />
+
+            <div className="mt-2 text-sm">
+              Selected value: <span className="font-medium">{selectedOption}</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Radio Button States */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Radio Button States</h3>
+          <div className="space-y-2">
+            <RadioButton
+              name="radio-states"
+              id="radio-default"
+              value="default"
+              label="Default radio button"
+            />
+            
+            <RadioButton
+              name="radio-states"
+              id="radio-checked"
+              value="checked"
+              label="Checked radio button"
+              checked={true}
+            />
+            
+            <RadioButton
+              name="radio-states"
+              id="radio-disabled"
+              value="disabled"
+              label="Disabled radio button"
+              disabled
+            />
+            
+            <RadioButton
+              name="radio-states"
+              id="radio-disabled-checked"
+              value="disabled-checked"
+              label="Disabled and checked"
+              disabled
+              checked
+            />
+            
+            <RadioButton
+              name="radio-states"
+              id="radio-error"
+              value="error"
+              label="Radio with error"
+              error="This field has an error"
+            />
+            
+            <RadioButton
+              name="radio-states"
+              id="radio-helper"
+              value="helper"
+              label="Radio with helper text"
+              helperText="This is some additional information"
+            />
+          </div>
+        </div>
+        
+        {/* Radio Button Sizes */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Radio Button Sizes</h3>
+          <div className="space-y-2">
+            <RadioButton
+              name="radio-sizes"
+              value="small"
+              label="Small radio button"
+              size="sm"
+            />
+            
+            <RadioButton
+              name="radio-sizes"
+              value="medium"
+              label="Medium radio button (default)"
+              size="md"
+            />
+            
+            <RadioButton
+              name="radio-sizes"
+              value="large"
+              label="Large radio button"
+              size="lg"
+            />
+          </div>
+        </div>
+        
+        {/* Radio Button Variants */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Radio Button Variants</h3>
+          <div className="space-y-2">
+            <RadioButton
+              name="radio-variants"
+              value="default"
+              label="Default variant (Primary)"
+              variant="default"
+              checked
+            />
+            
+            <RadioButton
+              name="radio-variants-2"
+              value="secondary"
+              label="Secondary variant"
+              variant="secondary"
+              checked
+            />
+            
+            <RadioButton
+              name="radio-variants-3"
+              value="success"
+              label="Success variant"
+              variant="success"
+              checked
+            />
+            
+            <RadioButton
+              name="radio-variants-4"
+              value="warning"
+              label="Warning variant"
+              variant="warning"
+              checked
+            />
+            
+            <RadioButton
+              name="radio-variants-5"
+              value="danger"
+              label="Danger variant"
+              variant="danger"
+              checked
+            />
+          </div>
+        </div>
+        
+        {/* Radio Button Group */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Radio Button Group</h3>
+          <div className="space-y-4">
+            <div>
+              <RadioButtonGroup
+                name="color-preference"
+                label="Select your favorite color"
+                value={selectedColor}
+                onChange={(value) => setSelectedColor(value)}
+                options={[
+                  { value: 'red', label: 'Red' },
+                  { value: 'blue', label: 'Blue' },
+                  { value: 'green', label: 'Green' },
+                  { value: 'yellow', label: 'Yellow' }
+                ]}
+              />
+              
+              <div className="mt-2 text-sm">
+                Selected color: <span className="font-medium">{selectedColor}</span>
+              </div>
+            </div>
+            
+            <div>
+              <RadioButtonGroup
+                name="size-preference"
+                label="Select a size"
+                value={selectedSize}
+                onChange={(value) => setSelectedSize(value)}
+                options={[
+                  { value: 'small', label: 'Small' },
+                  { value: 'medium', label: 'Medium' },
+                  { value: 'large', label: 'Large' },
+                  { value: 'xlarge', label: 'Extra Large', disabled: true }
+                ]}
+                helperText="Select the size that fits you best"
+                inline
+              />
+              
+              <div className="mt-2 text-sm">
+                Selected size: <span className="font-medium">{selectedSize}</span>
+              </div>
+            </div>
+            
+            <div>
+              <RadioButtonGroup
+                name="demo-required"
+                label="Required selection"
+                required
+                options={[
+                  { value: 'option1', label: 'Option 1' },
+                  { value: 'option2', label: 'Option 2' },
+                  { value: 'option3', label: 'Option 3' }
+                ]}
+                error="This field is required"
+                variant="danger"
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* Custom Styled Radio Buttons */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Custom Styled Examples</h3>
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <RadioButtonGroup
+              name="consent-options"
+              label="Privacy Consent Options"
+              value="full"
+              options={[
+                { 
+                  value: 'full', 
+                  label: <div>
+                    <span className="font-medium text-primary block">Full Consent</span>
+                    <span className="text-xs text-gray-500">Allow processing of all data for service improvement</span>
+                  </div> 
+                },
+                { 
+                  value: 'limited', 
+                  label: <div>
+                    <span className="font-medium text-primary block">Limited Processing</span>
+                    <span className="text-xs text-gray-500">Only process data necessary for core service</span>
+                  </div> 
+                },
+                { 
+                  value: 'minimal', 
+                  label: <div>
+                    <span className="font-medium text-primary block">Minimal Consent</span>
+                    <span className="text-xs text-gray-500">Only process legally required information</span>
+                  </div> 
+                }
+              ]}
+              helperText="Your privacy choices can be modified at any time"
+              className="space-y-3"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
   const renderInputsSection = () => {
     return (
       <section>
@@ -2095,6 +3428,744 @@ export default function Demo() {
     );
   };
 
+  // Add the renderFileUploadsSection function
+  const renderFileUploadsSection = () => {
+    // Mock upload handler to simulate server response
+    const mockUpload = (fileObj, timeout = 1500) => {
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          resolve({ success: true, fileId: `mock-${fileObj.id}` });
+        }, timeout);
+        
+        return () => clearTimeout(timer);
+      });
+    };
+    
+    // Event handlers
+    const handleStart = (fileObj) => {
+      console.log('Upload started:', fileObj.name);
+    };
+    
+    const handleProgress = (fileObj, progress) => {
+      console.log(`Upload progress for ${fileObj.name}: ${progress}%`);
+    };
+    
+    const handleSuccess = (fileObj, response) => {
+      console.log('Upload complete:', fileObj.name, response);
+    };
+    
+    const handleError = (fileObj, type, message) => {
+      console.error('Upload error:', fileObj.name, type, message);
+    };
+    
+    const handleRemove = (fileObj) => {
+      console.log('File removed:', fileObj.name);
+    };
+    
+    return (
+      <section>
+        <div className="space-y-8">
+          {/* Basic FileUpload */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Basic File Upload</h3>
+            <div className="max-w-xl">
+              <FileUpload 
+                // Using mock endpoint for demo
+                url="/api/upload"
+                maxFileSize={2}
+                onStart={handleStart}
+                onProgress={handleProgress}
+                onSuccess={handleSuccess}
+                onError={handleError}
+                onRemove={handleRemove}
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Drag & drop files or click to browse. Uploads are simulated in this demo.
+              </p>
+            </div>
+          </div>
+          
+          {/* Multiple File Upload */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Multiple File Upload</h3>
+            <div className="max-w-xl">
+              <FileUpload 
+                url="/api/upload"
+                multiple={true}
+                maxFileSize={5}
+                sizeDescription="Upload multiple files up to 5MB each."
+                onStart={handleStart}
+                onProgress={handleProgress}
+                onSuccess={handleSuccess}
+                onError={handleError}
+                onRemove={handleRemove}
+              />
+            </div>
+          </div>
+          
+          {/* Upload with File Type Restrictions */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">File Type Restrictions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-base font-medium mb-2">Images Only</h4>
+                <FileUpload 
+                  url="/api/upload-images"
+                  accept="image/*"
+                  maxFileSize={3}
+                  uploadText="Drop image here or"
+                  sizeDescription="Accepts images up to 3MB."
+                  onStart={handleStart}
+                  onProgress={handleProgress}
+                  onSuccess={handleSuccess}
+                  onError={handleError}
+                  onRemove={handleRemove}
+                />
+              </div>
+              
+              <div>
+                <h4 className="text-base font-medium mb-2">Documents Only</h4>
+                <FileUpload 
+                  url="/api/upload-documents"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx"
+                  maxFileSize={10}
+                  uploadText="Drop document here or"
+                  sizeDescription="Accepts documents up to 10MB."
+                  onStart={handleStart}
+                  onProgress={handleProgress}
+                  onSuccess={handleSuccess}
+                  onError={handleError}
+                  onRemove={handleRemove}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Disabled Upload */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Disabled State</h3>
+            <div className="max-w-xl">
+              <FileUpload 
+                url="/api/upload"
+                disabled={true}
+                uploadText="Upload currently disabled"
+                sizeDescription="Contact administrator for access."
+              />
+            </div>
+          </div>
+          
+          {/* Custom Styling */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Custom Styling</h3>
+            <div className="max-w-xl">
+              <FileUpload 
+                url="/api/upload"
+                uploadClassName="p-8 border-primary border-opacity-30 hover:border-opacity-100"
+                previewClassName="border-primary/20"
+                progressClassName="bg-gray-100"
+                uploadText="Upload your files"
+                browseText="select files"
+                sizeDescription="Customize the look and feel"
+                onStart={handleStart}
+                onProgress={handleProgress}
+                onSuccess={handleSuccess}
+                onError={handleError}
+                onRemove={handleRemove}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  // Add this section rendering function
+  const renderSkeletonsSection = () => {
+    return (
+      <section>
+        <div className="space-y-8">
+          {/* Basic Skeleton Items */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Basic Skeleton Items</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Default line (full width)</p>
+                <SkeletonItem />
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Custom width (40%)</p>
+                <SkeletonItem width="40%" />
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Custom height</p>
+                <SkeletonItem height="8" />
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Different border radius</p>
+                <SkeletonItem shape="rounded-md" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Multiple Skeleton Items */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Multiple Skeleton Items</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Multiple lines with count prop</p>
+                <Skeleton count={4} />
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Custom gap between items</p>
+                <Skeleton count={4} gap="2" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Skeleton Color Variants */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Skeleton Color Variants</h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Default</p>
+                  <Skeleton count={2} variant="default" />
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Light</p>
+                  <Skeleton count={2} variant="light" />
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Dark</p>
+                  <Skeleton count={2} variant="dark" />
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Primary</p>
+                  <Skeleton count={2} variant="primary" />
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Secondary</p>
+                  <Skeleton count={2} variant="secondary" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* With No Animation */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Animation Controls</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Without animation</p>
+                <Skeleton count={3} animation={false} />
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">With animation (default)</p>
+                <Skeleton count={3} animation={true} />
+              </div>
+            </div>
+          </div>
+          
+          {/* Specialized Skeleton Components */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Text Skeleton</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Default text block (3 lines)</p>
+                <SkeletonText />
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Custom number of lines</p>
+                <SkeletonText lines={5} />
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Custom last line width</p>
+                <SkeletonText lastLineWidth="40%" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Avatar Skeleton */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Avatar Skeleton</h3>
+            <div>
+              <p className="text-sm text-gray-500 mb-2">Various sizes</p>
+              <div className="flex items-center gap-4 mb-4">
+                <SkeletonAvatar size="xs" />
+                <SkeletonAvatar size="sm" />
+                <SkeletonAvatar size="md" />
+                <SkeletonAvatar size="lg" />
+                <SkeletonAvatar size="xl" />
+              </div>
+              
+              <p className="text-sm text-gray-500 mb-2">Color variants</p>
+              <div className="flex items-center gap-4">
+                <SkeletonAvatar variant="default" />
+                <SkeletonAvatar variant="primary" />
+                <SkeletonAvatar variant="secondary" />
+                <SkeletonAvatar variant="light" />
+                <SkeletonAvatar variant="dark" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Skeleton Card */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Profile Card Skeleton</h3>
+            <div className="space-y-6">
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Default profile card</p>
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <SkeletonCard />
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Without avatar</p>
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <SkeletonCard hasAvatar={false} />
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Primary variant</p>
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <SkeletonCard variant="primary" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Skeleton Table */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Table Skeleton</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Default table skeleton</p>
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <SkeletonTable />
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Custom rows and columns</p>
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <SkeletonTable rows={3} columns={3} />
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Without header</p>
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <SkeletonTable hasHeader={false} />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Complex Example */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Complex Loading State Example</h3>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              {/* Header */}
+              <div className="border-b border-gray-200 p-4">
+                <SkeletonItem width="30%" height="6" />
+              </div>
+              
+              {/* Main content */}
+              <div className="p-4 space-y-6">
+                {/* Card item */}
+                <div className="flex">
+                  <div className="shrink-0">
+                    <SkeletonAvatar size="md" />
+                  </div>
+                  
+                  <div className="ms-4 mt-1 w-full">
+                    <SkeletonItem width="40%" height="5" className="mb-2" />
+                    <SkeletonItem width="25%" height="4" className="mb-4" />
+                    
+                    <div className="space-y-2">
+                      <SkeletonItem height="4" />
+                      <SkeletonItem height="4" />
+                      <SkeletonItem width="75%" height="4" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Card item */}
+                <div className="flex">
+                  <div className="shrink-0">
+                    <SkeletonAvatar size="md" />
+                  </div>
+                  
+                  <div className="ms-4 mt-1 w-full">
+                    <SkeletonItem width="35%" height="5" className="mb-2" />
+                    <SkeletonItem width="20%" height="4" className="mb-4" />
+                    
+                    <div className="space-y-2">
+                      <SkeletonItem height="4" />
+                      <SkeletonItem width="85%" height="4" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Stats grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                  <div className="p-4 border border-gray-200 rounded-lg">
+                    <SkeletonItem width="50%" height="5" className="mb-3" />
+                    <SkeletonItem width="70%" height="8" />
+                  </div>
+                  
+                  <div className="p-4 border border-gray-200 rounded-lg">
+                    <SkeletonItem width="50%" height="5" className="mb-3" />
+                    <SkeletonItem width="70%" height="8" />
+                  </div>
+                  
+                  <div className="p-4 border border-gray-200 rounded-lg">
+                    <SkeletonItem width="50%" height="5" className="mb-3" />
+                    <SkeletonItem width="70%" height="8" />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Footer */}
+              <div className="border-t border-gray-200 p-4 flex justify-between">
+                <SkeletonItem width="20%" height="4" />
+                <SkeletonItem width="10%" height="4" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Custom Skeleton Composition */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Custom Composition</h3>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500 mb-2">Using children prop to create custom layouts</p>
+              
+              <div className="border border-gray-200 rounded-lg p-4">
+                <Skeleton>
+                  {/* Report card skeleton */}
+                  <div className="space-y-4">
+                    {/* Header */}
+                    <div className="flex justify-between items-center">
+                      <SkeletonItem width="30%" height="6" />
+                      <SkeletonItem width="20%" height="4" shape="rounded-lg" />
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="space-y-2">
+                      <SkeletonItem height="4" />
+                      <SkeletonItem height="4" />
+                      <SkeletonItem width="75%" height="4" />
+                    </div>
+                    
+                    {/* Footer */}
+                    <div className="flex justify-between items-center pt-2">
+                      <div className="flex gap-2">
+                        <SkeletonItem width="10" height="5" shape="rounded-md" />
+                        <SkeletonItem width="10" height="5" shape="rounded-md" />
+                      </div>
+                      <SkeletonItem width="15%" height="5" shape="rounded-md" />
+                    </div>
+                  </div>
+                </Skeleton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  // Add this section rendering function or update the existing one
+  const renderSpinnersSection = () => {
+    // Instead of useState, we'll use a regular variable and a timeout
+    // for the fullscreen spinner example
+    
+    return (
+      <section>
+        <div className="space-y-8">
+          {/* Basic Spinners */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Basic Spinners</h3>
+            <div className="flex flex-wrap items-center gap-6 p-4 bg-white border border-gray-200 rounded-lg">
+              <Spinner size="xs" />
+              <Spinner size="sm" />
+              <Spinner size="md" />
+              <Spinner size="lg" />
+              <Spinner size="xl" />
+              <Spinner size="2xl" />
+            </div>
+          </div>
+          
+          {/* Spinner Colors */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Spinner Colors</h3>
+            <div className="flex flex-wrap items-center gap-6 p-4 bg-white border border-gray-200 rounded-lg">
+              <Spinner color="primary" />
+              <Spinner color="secondary" />
+              <Spinner color="success" />
+              <Spinner color="danger" />
+              <Spinner color="warning" />
+              <Spinner color="info" />
+              <Spinner color="dark" />
+              <div className="p-2 bg-gray-800 rounded-md">
+                <Spinner color="white" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Spinner Thickness */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Border Thickness</h3>
+            <div className="flex flex-wrap items-center gap-6 p-4 bg-white border border-gray-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Spinner thickness="thin" />
+                <span className="text-sm text-gray-600">Thin</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Spinner thickness="normal" />
+                <span className="text-sm text-gray-600">Normal</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Spinner thickness="thick" />
+                <span className="text-sm text-gray-600">Thick</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Spinner Variants */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Spinner Variants</h3>
+            <div className="flex flex-wrap items-center gap-12 p-4 bg-white border border-gray-200 rounded-lg">
+              <div className="flex flex-col items-center gap-2">
+                <Spinner variant="border" size="lg" />
+                <span className="text-sm text-gray-600">Border</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <Spinner variant="dots" size="lg" />
+                <span className="text-sm text-gray-600">Dots</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <Spinner variant="grow" size="lg" />
+                <span className="text-sm text-gray-600">Grow</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Spinners with Labels */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Spinners with Labels</h3>
+            <div className="space-y-4 p-4 bg-white border border-gray-200 rounded-lg">
+              <div className="flex flex-wrap gap-8">
+                <Spinner showLabel labelPosition="right" />
+                <Spinner showLabel label="Processing..." labelPosition="right" />
+              </div>
+              
+              <div className="flex flex-wrap gap-8 mt-4">
+                <Spinner showLabel labelPosition="bottom" />
+                <Spinner showLabel label="Please wait..." labelPosition="top" />
+                <Spinner showLabel label="Submitting..." labelPosition="left" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Button Spinners */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Button Spinners</h3>
+            <div className="flex flex-wrap gap-4 p-4 bg-white border border-gray-200 rounded-lg">
+              <Button variant="primary">
+                <ButtonSpinner color="white" />
+                <span className="ml-2">Loading</span>
+              </Button>
+              
+              <Button variant="outline-primary">
+                <ButtonSpinner color="primary" />
+                <span className="ml-2">Processing</span>
+              </Button>
+              
+              <Button variant="success">
+                <span className="mr-2">Submitting</span>
+                <ButtonSpinner color="white" />
+              </Button>
+              
+              <Button variant="danger" disabled>
+                <ButtonSpinner color="white" />
+                <span className="ml-2">Please wait</span>
+              </Button>
+            </div>
+          </div>
+          
+          {/* Spinners in Cards */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Spinners in Cards</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Simple card with spinner */}
+              <div className="min-h-60 flex flex-col bg-white border border-gray-200 shadow-sm rounded-xl">
+                <div className="flex flex-auto flex-col justify-center items-center p-4 md:p-5">
+                  <div className="flex justify-center">
+                    <Spinner size="lg" color="primary" />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Card with spinner and label */}
+              <div className="min-h-60 flex flex-col bg-white border border-gray-200 shadow-sm rounded-xl">
+                <div className="flex flex-auto flex-col justify-center items-center p-4 md:p-5">
+                  <div className="flex flex-col items-center gap-3">
+                    <Spinner size="lg" color="primary" />
+                    <p className="text-gray-500">Loading data...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Spinner Overlays */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Spinner Overlays</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Card with content and overlay */}
+              <div className="relative min-h-60 bg-white border border-gray-200 shadow-sm rounded-xl p-4">
+                <div className="opacity-25">
+                  <h4 className="text-lg font-medium mb-2">Card Title</h4>
+                  <p className="text-gray-600 mb-3">This content is behind the loading overlay.</p>
+                  <p className="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.</p>
+                </div>
+                
+                <SpinnerOverlay 
+                  size="lg" 
+                  color="primary" 
+                  label="Loading content..." 
+                />
+              </div>
+              
+              {/* Card with content and transparent overlay */}
+              <div className="relative min-h-60 bg-white border border-gray-200 shadow-sm rounded-xl p-4">
+                <div className="opacity-25">
+                  <h4 className="text-lg font-medium mb-2">Card Title</h4>
+                  <p className="text-gray-600 mb-3">This content is behind the transparent loading overlay.</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 bg-gray-100 rounded">Item 1</div>
+                    <div className="p-2 bg-gray-100 rounded">Item 2</div>
+                    <div className="p-2 bg-gray-100 rounded">Item 3</div>
+                    <div className="p-2 bg-gray-100 rounded">Item 4</div>
+                  </div>
+                </div>
+                
+                <SpinnerOverlay 
+                  size="lg" 
+                  color="primary" 
+                  label="Updating..." 
+                  transparent={true}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Fullscreen Spinner Example (Without useState) */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Fullscreen Spinner</h3>
+            <div className="p-4 bg-white border border-gray-200 rounded-lg">
+              <p className="text-gray-600 mb-4">For fullscreen loading states, use the FullscreenSpinner component:</p>
+              
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <code className="text-sm text-gray-800">
+                  {`<FullscreenSpinner 
+    size="xl" 
+    color="primary" 
+    label="Loading application..." 
+  />`}
+                </code>
+              </div>
+              
+              <p className="text-gray-600 mt-4">
+                For a real demonstration, you would typically use this with a state variable:
+              </p>
+              
+              <div className="bg-gray-100 p-4 rounded-lg mt-2">
+                <code className="text-sm text-gray-800">
+  {`// At the top level of your component
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // When you need to show the spinner
+  setIsLoading(true);
+  
+  // Later, when loading is complete
+  setIsLoading(false);
+  
+  // In your JSX
+  {isLoading && (
+    <FullscreenSpinner 
+      size="xl" 
+      color="primary" 
+      label="Loading application..." 
+    />
+  )}`}
+                </code>
+              </div>
+            </div>
+          </div>
+          
+          {/* Custom Styling Examples */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Custom Styling Examples</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Custom styled spinner 1 */}
+              <div className="flex flex-col items-center justify-center p-6 bg-gradient-to-r from-primary/30 to-secondary/30 rounded-lg">
+                <Spinner 
+                  size="xl" 
+                  color="primary" 
+                  thickness="thick" 
+                  showLabel 
+                  labelPosition="bottom"
+                  label="Processing"
+                />
+              </div>
+              
+              {/* Custom styled spinner 2 */}
+              <div className="flex flex-col items-center justify-center p-6 bg-gray-900 rounded-lg">
+                <Spinner 
+                  variant="dots" 
+                  size="lg" 
+                  color="white" 
+                  showLabel 
+                  labelPosition="bottom"
+                  label="Loading data"
+                  containerClassName="text-white"
+                />
+              </div>
+              
+              {/* Custom styled spinner 3 */}
+              <div className="flex flex-col items-center justify-center p-6 bg-success/10 rounded-lg border border-success/30">
+                <Spinner 
+                  variant="border" 
+                  size="lg" 
+                  color="success" 
+                  showLabel 
+                  labelPosition="bottom"
+                  label="Upload complete"
+                  containerClassName="text-success"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
   const renderTextAreasSection = () => {
     return (
       <section>
@@ -2180,6 +4251,772 @@ export default function Demo() {
                 placeholder="This textarea is disabled"
                 disabled
               />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  // This is the fixed version of the renderTablesSection function
+  // We'll avoid using useState hooks directly in this function
+
+  const renderTablesSection = () => {
+    // Sample data for tables
+    const usersData = [
+      { id: 1, name: "John Brown", age: 32, address: "New York No. 1 Lake Park", tags: ["developer"] },
+      { id: 2, name: "Jim Green", age: 42, address: "London No. 1 Lake Park", tags: ["designer"] },
+      { id: 3, name: "Joe Black", age: 32, address: "Sidney No. 1 Lake Park", tags: ["manager"] },
+      { id: 4, name: "Jane Smith", age: 27, address: "Chicago No. 1 River View", tags: ["developer", "admin"] },
+      { id: 5, name: "Mike Wilson", age: 35, address: "Tokyo Central Area", tags: ["designer"] },
+      { id: 6, name: "Sarah Johnson", age: 29, address: "Berlin Downtown", tags: ["manager", "admin"] },
+      { id: 7, name: "David Lee", age: 38, address: "Paris Avenue 23", tags: ["developer"] },
+      { id: 8, name: "Lisa Wong", age: 41, address: "Singapore Marina Bay", tags: ["designer", "manager"] },
+    ];
+    
+    // Table columns definition
+    const columns = [
+      {
+        key: 'name',
+        title: 'Name',
+        sortable: true,
+        searchable: true
+      },
+      {
+        key: 'age',
+        title: 'Age',
+        sortable: true,
+        searchable: true,
+        align: 'right',
+      },
+      {
+        key: 'address',
+        title: 'Address',
+        sortable: true,
+        searchable: true,
+        nowrap: false,
+      },
+      {
+        key: 'tags',
+        title: 'Tags',
+        sortable: false,
+        searchable: true,
+        // Custom render function for tags
+        render: (record) => (
+          <div className="flex flex-wrap gap-1">
+            {record.tags.map(tag => (
+              <span 
+                key={tag}
+                className={`
+                  inline-flex items-center gap-x-1 py-1 px-2 rounded-full text-xs font-medium
+                  ${tag === 'developer' ? 'bg-blue-100 text-blue-800' : 
+                  tag === 'designer' ? 'bg-purple-100 text-purple-800' : 
+                  tag === 'manager' ? 'bg-yellow-100 text-yellow-800' : 
+                  tag === 'admin' ? 'bg-red-100 text-red-800' : 
+                  'bg-gray-100 text-gray-800'}
+                `}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )
+      },
+      {
+        key: 'action',
+        title: 'Action',
+        align: 'right',
+        sortable: false,
+        searchable: false,
+        // Custom render function for actions
+        render: (record) => (
+          <div className="flex justify-end gap-2">
+            <button 
+              type="button"
+              className="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none"
+              onClick={() => alert(`View ${record.name}`)}
+            >
+              View
+            </button>
+            <button 
+              type="button"
+              className="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent text-red-600 hover:text-red-800 disabled:opacity-50 disabled:pointer-events-none"
+              onClick={() => alert(`Delete ${record.name}`)}
+            >
+              Delete
+            </button>
+          </div>
+        )
+      }
+    ];
+    
+    // Action buttons for table header
+    const tableActions = {
+      left: (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500 whitespace-nowrap">
+            User Management
+          </span>
+        </div>
+      ),
+      right: (
+        <>
+          <button
+            type="button"
+            className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+          >
+            <svg className="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" x2="12" y1="3" y2="15"></line>
+            </svg>
+            Export
+          </button>
+          <button
+            type="button"
+            className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-primary-dark disabled:opacity-50 disabled:pointer-events-none"
+          >
+            <svg className="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add User
+          </button>
+        </>
+      )
+    };
+
+    // Custom filter component example
+    const filterComponent = (
+      <div className="hs-dropdown relative inline-flex">
+        <button
+          type="button"
+          className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+        >
+          <svg className="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"></path>
+          </svg>
+          Filter
+        </button>
+      </div>
+    );
+
+    return (
+      <section>
+        <div className="space-y-8">
+          {/* Basic Table */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Basic Table</h3>
+            <Table 
+              columns={columns.filter(col => col.key !== 'tags')} 
+              data={usersData.slice(0, 3)} 
+              keyField="id"
+            />
+          </div>
+          
+          {/* Advanced Table with Features */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Advanced Table with Features</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              This table demonstrates various features like sorting, searching, and custom rendering. 
+              In a real application, you'd connect this with state to make it interactive.
+            </p>
+            <Table 
+              columns={columns} 
+              data={usersData} 
+              keyField="id"
+              sortable
+              searchable
+              searchPlaceholder="Search users..."
+              pagination
+              pageSize={5}
+              actions={tableActions}
+              filterComponent={filterComponent}
+              emptyMessage="No users found"
+              hoverable
+              size="md"
+            />
+            <div className="mt-4 text-sm text-gray-600">
+              <p>Features demonstrated:</p>
+              <ul className="list-disc pl-5 mt-2">
+                <li>Sortable columns (click on Name, Age, or Address headers)</li>
+                <li>Searchable content (search across all columns)</li>
+                <li>Pagination</li>
+                <li>Custom actions in header</li>
+                <li>Custom cell rendering (Tags column)</li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Table Variants */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Table Variants</h3>
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-base font-medium mb-2">Striped Table</h4>
+                <Table 
+                  columns={columns.filter(col => col.key !== 'tags' && col.key !== 'action')} 
+                  data={usersData.slice(0, 4)} 
+                  keyField="id"
+                  striped
+                  variant="default"
+                />
+              </div>
+              
+              <div>
+                <h4 className="text-base font-medium mb-2">Primary Theme</h4>
+                <Table 
+                  columns={columns.filter(col => col.key !== 'tags' && col.key !== 'action')} 
+                  data={usersData.slice(0, 4)} 
+                  keyField="id"
+                  variant="primary"
+                />
+              </div>
+              
+              <div>
+                <h4 className="text-base font-medium mb-2">Bordered Table</h4>
+                <Table 
+                  columns={columns.filter(col => col.key !== 'tags' && col.key !== 'action')} 
+                  data={usersData.slice(0, 4)} 
+                  keyField="id"
+                  variant="bordered"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Table Sizes */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Table Sizes</h3>
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-base font-medium mb-2">Small Size</h4>
+                <Table 
+                  columns={columns.filter(col => col.key !== 'tags')} 
+                  data={usersData.slice(0, 3)} 
+                  keyField="id"
+                  size="sm"
+                />
+              </div>
+              
+              <div>
+                <h4 className="text-base font-medium mb-2">Medium Size (Default)</h4>
+                <Table 
+                  columns={columns.filter(col => col.key !== 'tags')} 
+                  data={usersData.slice(0, 3)} 
+                  keyField="id"
+                  size="md"
+                />
+              </div>
+              
+              <div>
+                <h4 className="text-base font-medium mb-2">Large Size</h4>
+                <Table 
+                  columns={columns.filter(col => col.key !== 'tags')} 
+                  data={usersData.slice(0, 3)} 
+                  keyField="id"
+                  size="lg"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Empty State */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Empty Table</h3>
+            <Table 
+              columns={columns.filter(col => col.key !== 'tags')} 
+              data={[]} 
+              keyField="id"
+              emptyMessage={
+                <div className="py-8">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No data</h3>
+                  <p className="mt-1 text-sm text-gray-500">No records match your criteria.</p>
+                  <div className="mt-6">
+                    <button
+                      type="button"
+                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none"
+                    >
+                      Add New Data
+                    </button>
+                  </div>
+                </div>
+              }
+            />
+          </div>
+          
+          {/* Loading State */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Loading State</h3>
+            <Table 
+              columns={columns.filter(col => col.key !== 'tags')} 
+              data={usersData.slice(0, 3)} 
+              keyField="id"
+              loading={true}
+            />
+          </div>
+          
+          {/* Custom Loading Component */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Custom Loading Component</h3>
+            <Table 
+              columns={columns.filter(col => col.key !== 'tags')} 
+              data={usersData.slice(0, 3)} 
+              keyField="id"
+              loading={true}
+              loadingComponent={
+                <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-10">
+                  <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mb-2"></div>
+                  <p className="text-primary font-medium">Loading data...</p>
+                </div>
+              }
+            />
+          </div>
+          
+          {/* Column Customization */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Column Customization</h3>
+            <Table 
+              columns={[
+                {
+                  key: 'name',
+                  title: 'User Information',
+                  sortable: true,
+                  searchable: true,
+                  // Custom column render to show both name and address
+                  render: (record) => (
+                    <div>
+                      <div className="font-medium text-gray-800">{record.name}</div>
+                      <div className="text-gray-500 text-xs mt-1">{record.address}</div>
+                    </div>
+                  )
+                },
+                {
+                  key: 'age',
+                  title: 'Age',
+                  align: 'center',
+                  width: '100px',
+                  // Custom column render for age with color coding
+                  render: (record) => (
+                    <span className={`
+                      inline-flex items-center justify-center size-8 rounded-full font-medium
+                      ${record.age < 30 ? 'bg-green-100 text-green-800' :
+                      record.age < 40 ? 'bg-blue-100 text-blue-800' :
+                      'bg-purple-100 text-purple-800'}
+                    `}>
+                      {record.age}
+                    </span>
+                  )
+                },
+                {
+                  key: 'tags',
+                  title: 'Role',
+                  align: 'center',
+                  // Show only the first tag
+                  render: (record) => (
+                    <span className={`
+                      inline-block py-1 px-3 rounded-full text-xs font-medium
+                      ${record.tags[0] === 'developer' ? 'bg-blue-100 text-blue-800' : 
+                      record.tags[0] === 'designer' ? 'bg-purple-100 text-purple-800' : 
+                      record.tags[0] === 'manager' ? 'bg-yellow-100 text-yellow-800' : 
+                      'bg-gray-100 text-gray-800'}
+                    `}>
+                      {record.tags[0]}
+                    </span>
+                  )
+                },
+                {
+                  key: 'status',
+                  title: 'Status',
+                  align: 'center',
+                  // Render a column that doesn't exist in original data
+                  render: () => (
+                    <span className="inline-flex items-center gap-1 py-1 px-2 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="size-2 inline-block bg-green-500 rounded-full"></span>
+                      Active
+                    </span>
+                  )
+                },
+                {
+                  key: 'action',
+                  title: 'Action',
+                  align: 'right',
+                  render: (record) => (
+                    <div className="flex justify-end gap-1">
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center size-8 rounded-full border border-transparent text-gray-500 hover:bg-gray-100"
+                      >
+                        <svg className="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center size-8 rounded-full border border-transparent text-gray-500 hover:bg-gray-100"
+                      >
+                        <svg className="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                      </button>
+                      <button
+                        type="button" 
+                        className="inline-flex items-center justify-center size-8 rounded-full border border-transparent text-red-500 hover:bg-red-50"
+                      >
+                        <svg className="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 6h18"></path>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  )
+                }
+              ]} 
+              data={usersData.slice(0, 5)} 
+              keyField="id"
+              sortable
+              hoverable
+            />
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const renderToastsSection = () => {
+    // Inner component to demonstrate the useToast hook
+    // We need this inner component to use the hook properly
+    const ToastDemo = () => {
+      const toast = useToast();
+      
+      const showDefaultToast = () => {
+        toast.addToast({
+          message: 'This is a default toast message',
+          title: 'Default Toast'
+        });
+      };
+      
+      const showSuccessToast = () => {
+        toast.success('Operation completed successfully!', {
+          title: 'Success',
+          duration: 3000
+        });
+      };
+      
+      const showErrorToast = () => {
+        toast.error('An error has occurred.', {
+          title: 'Error',
+          duration: 4000,
+          showProgress: true
+        });
+      };
+      
+      const showWarningToast = () => {
+        toast.warning('Please review your information.', {
+          title: 'Warning',
+          autoClose: false
+        });
+      };
+      
+      const showInfoToast = () => {
+        toast.info('New updates are available.', {
+          position: 'top-right'
+        });
+      };
+      
+      const showActionToast = () => {
+        toast.info('Your file has been deleted.', {
+          actionText: 'Undo',
+          onAction: () => {
+            toast.success('Action undone successfully!');
+          }
+        });
+      };
+      
+      const showCustomPositionToast = () => {
+        toast.addToast({
+          message: 'This toast appears at the top center',
+          type: 'info',
+          position: 'top-center',
+          variant: 'outline'
+        });
+      };
+      
+      const showNoAutoCloseToast = () => {
+        toast.addToast({
+          message: 'This toast will not auto-close',
+          type: 'warning',
+          autoClose: false,
+          title: 'Manual Close'
+        });
+      };
+      
+      const showNoIconToast = () => {
+        toast.success('This toast has no icon', {
+          showIcon: false
+        });
+      };
+      
+      const showColoredVariantToast = () => {
+        toast.addToast({
+          message: 'This toast uses the colored variant',
+          type: 'success',
+          variant: 'colored'
+        });
+      };
+      
+      const showOutlineVariantToast = () => {
+        toast.error('This toast uses the outline variant', {
+          variant: 'outline'
+        });
+      };
+      
+      const showMinimalVariantToast = () => {
+        toast.warning('This toast uses the minimal variant', {
+          variant: 'minimal'
+        });
+      };
+      
+      const showLongDurationToast = () => {
+        toast.info('This toast will stay for 10 seconds', {
+          duration: 10000,
+          showProgress: true
+        });
+      };
+      
+      return (
+        <div className="space-y-6">
+          {/* Interactive Demo */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Interactive Toast Demo</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Click the buttons below to show different types of toast notifications.
+              The toasts will appear at the bottom right corner of the screen.
+            </p>
+            
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={showDefaultToast}>Default Toast</Button>
+              <Button onClick={showSuccessToast} variant="success">Success Toast</Button>
+              <Button onClick={showErrorToast} variant="danger">Error Toast</Button>
+              <Button onClick={showWarningToast} variant="warning">Warning Toast</Button>
+              <Button onClick={showInfoToast} variant="outline-primary">Info Toast</Button>
+              <Button onClick={showActionToast} variant="outline-secondary">Toast with Action</Button>
+            </div>
+            
+            <div className="flex flex-wrap gap-3 mt-4">
+              <Button onClick={showCustomPositionToast} variant="outline-gray">Custom Position</Button>
+              <Button onClick={showNoAutoCloseToast} variant="outline-gray">No Auto-Close</Button>
+              <Button onClick={showNoIconToast} variant="outline-gray">No Icon</Button>
+              <Button onClick={showColoredVariantToast} variant="outline-gray">Colored Variant</Button>
+              <Button onClick={showOutlineVariantToast} variant="outline-gray">Outline Variant</Button>
+              <Button onClick={showMinimalVariantToast} variant="outline-gray">Minimal Variant</Button>
+              <Button onClick={showLongDurationToast} variant="outline-gray">Long Duration</Button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+    
+    // Static examples section
+    const StaticExamples = () => (
+      <div className="space-y-6 mt-8">
+        {/* Toast Types */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Toast Types</h3>
+          <div className="space-y-3">
+            <Toast
+              id="static-default"
+              message="This is a default toast message."
+              isVisible={true}
+              autoClose={false}
+              onClose={() => {}}
+            />
+            
+            <Toast
+              id="static-success"
+              message="Operation completed successfully!"
+              type="success"
+              isVisible={true}
+              autoClose={false}
+              onClose={() => {}}
+            />
+            
+            <Toast
+              id="static-error"
+              message="An error has occurred."
+              type="error"
+              isVisible={true}
+              autoClose={false}
+              onClose={() => {}}
+            />
+            
+            <Toast
+              id="static-warning"
+              message="Please review your information."
+              type="warning"
+              isVisible={true}
+              autoClose={false}
+              onClose={() => {}}
+            />
+          </div>
+        </div>
+        
+        {/* Toast with Title */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Toast with Title</h3>
+          <Toast
+            id="static-with-title"
+            title="Notification Title"
+            message="This toast includes a title above the message."
+            type="info"
+            isVisible={true}
+            autoClose={false}
+            onClose={() => {}}
+          />
+        </div>
+        
+        {/* Toast with Action */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Toast with Action</h3>
+          <Toast
+            id="static-with-action"
+            message="Your email has been sent."
+            type="success"
+            isVisible={true}
+            autoClose={false}
+            actionText="Undo"
+            onAction={() => {}}
+            onClose={() => {}}
+          />
+        </div>
+        
+        {/* Toast Variants */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Toast Variants</h3>
+          <div className="space-y-3">
+            <Toast
+              id="static-default-variant"
+              message="Default variant"
+              type="info"
+              variant="default"
+              isVisible={true}
+              autoClose={false}
+              onClose={() => {}}
+            />
+            
+            <Toast
+              id="static-colored-variant"
+              message="Colored variant"
+              type="success"
+              variant="colored"
+              isVisible={true}
+              autoClose={false}
+              onClose={() => {}}
+            />
+            
+            <Toast
+              id="static-outline-variant"
+              message="Outline variant"
+              type="warning"
+              variant="outline"
+              isVisible={true}
+              autoClose={false}
+              onClose={() => {}}
+            />
+            
+            <Toast
+              id="static-minimal-variant"
+              message="Minimal variant"
+              type="error"
+              variant="minimal"
+              isVisible={true}
+              autoClose={false}
+              onClose={() => {}}
+            />
+          </div>
+        </div>
+        
+        {/* Progress Toast */}
+        <div>
+          <h3 className="text-lg font-medium mb-3">Toast with Progress Bar</h3>
+          <Toast
+            id="static-progress"
+            message="This toast displays a progress bar."
+            type="info"
+            isVisible={true}
+            autoClose={false}
+            showProgress={true}
+            onClose={() => {}}
+          />
+        </div>
+      </div>
+    );
+    
+    return (
+      <section>
+        <div className="space-y-8">
+          <div>
+            <h3 className="text-xl font-medium mb-2">Toast Notifications</h3>
+            <p className="text-gray-600 mb-4">
+              Toast notifications provide brief messages about app processes. 
+              The system is built with a context provider for easy management.
+            </p>
+            
+            {/* Note on setup */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+              <h4 className="font-medium text-blue-800 mb-2">Implementation Note</h4>
+              <p className="text-sm text-blue-700">
+                To use toast notifications in your application, wrap your app with the <code className="bg-blue-100 px-1 rounded">ToastProvider</code> component
+                in your main application file, then use the <code className="bg-blue-100 px-1 rounded">useToast</code> hook in your components.
+              </p>
+            </div>
+            
+            {/* Interactive Demo */}
+            <ToastDemo />
+            
+            {/* Static Examples */}
+            <StaticExamples />
+            
+            {/* Usage Examples */}
+            <div className="mt-8">
+              <h3 className="text-lg font-medium mb-3">Usage Examples</h3>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <pre className="text-sm text-gray-800 overflow-auto p-2">
+                  {`// Setup
+  import { ToastProvider, useToast } from '@/components/common/Toast';
+  
+  // In your main App component
+  function App() {
+    return (
+      <ToastProvider>
+        {/* Your app content */}
+      </ToastProvider>
+    );
+  }
+  
+  // In any component
+  function MyComponent() {
+    const toast = useToast();
+    
+    const handleSubmit = async () => {
+      try {
+        // Your logic
+        toast.success('Data saved successfully!');
+      } catch (error) {
+        toast.error('Failed to save data');
+      }
+    }
+    
+    return <Button onClick={handleSubmit}>Save</Button>;
+  }`}
+                </pre>
+              </div>
             </div>
           </div>
         </div>

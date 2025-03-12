@@ -15,7 +15,7 @@ import { formatDate } from '@/utils/formatters';
 
 // Modals
 import ReportDetailModal from '@/components/user/modals/admin/DetailModal';
-import FinishReportModal from '@/components/user/modals/report/Finish';
+import FinishReportModal from '@/components/user/modals/admin/FinishModal';
 
 const ProcessedReportList = () => {
   const navigate = useNavigate();
