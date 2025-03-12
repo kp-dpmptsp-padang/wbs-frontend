@@ -9,6 +9,7 @@ import Button from '@/components/common/Button';
 import Profile from '@/components/user/Profile';
 import UpdateProfileForm from '@/components/user/UpdateProfileForm';
 import UpdatePasswordForm from '@/components/user/UpdatePasswordForm';
+import PageContainer from '@/components/user/layout/PageContainer';
 import authService from '@/services/auth.service';
 
 const UserProfile = () => {
@@ -134,10 +135,34 @@ const UserProfile = () => {
         );
       case 'change-password':
         return (
-          <UpdatePasswordForm
-            onSubmit={handleUpdatePassword}
-            isLoading={isSubmitting}
-          />
+          <>
+            <UpdatePasswordForm
+              onSubmit={handleUpdatePassword}
+              isLoading={isSubmitting}
+            />
+            
+            {/* Security Notice */}
+            <div className="mt-6">
+              <Card className="bg-yellow-50 border-yellow-200">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <FiAlertTriangle className="h-5 w-5 text-yellow-400" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800">Tips Keamanan</h3>
+                    <div className="mt-2 text-sm text-yellow-700">
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Gunakan password yang kuat dan unik</li>
+                        <li>Jangan bagikan password Anda dengan orang lain</li>
+                        <li>Jangan gunakan password yang sama dengan aplikasi lain</li>
+                        <li>Hindari menggunakan informasi pribadi sebagai password</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </>
         );
       case 'profile':
       default:
@@ -151,36 +176,11 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Profil Pengguna</h1>
-      
-      {renderTabs()}
-      
-      {renderContent()}
-      
-      {/* Security Notice */}
-      {activeView === 'change-password' && (
-        <div className="mt-6">
-          <Card className="bg-yellow-50 border-yellow-200">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <FiAlertTriangle className="h-5 w-5 text-yellow-400" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800">Tips Keamanan</h3>
-                <div className="mt-2 text-sm text-yellow-700">
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Gunakan password yang kuat dan unik</li>
-                    <li>Jangan bagikan password Anda dengan orang lain</li>
-                    <li>Jangan gunakan password yang sama dengan aplikasi lain</li>
-                    <li>Hindari menggunakan informasi pribadi sebagai password</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <PageContainer title="Profil Pengguna">
+        {renderTabs()}
+        {renderContent()}
+      </PageContainer>
     </div>
   );
 };

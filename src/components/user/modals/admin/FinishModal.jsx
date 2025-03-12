@@ -1,88 +1,38 @@
-// src/components/user/modals/report/Finish.jsx
+// src/components/user/modals/admin/FinishModal.jsx
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { FiCheckCircle, FiUpload, FiFile, FiX } from 'react-icons/fi';
+import { FiX, FiCheckCircle } from 'react-icons/fi';
 import Modal from '@/components/common/Modal';
 import Button from '@/components/common/Button';
 import TextArea from '@/components/common/TextArea';
+import FileInput from '@/components/common/FileInput';
 
-const Finish = ({ isOpen, onClose, onConfirm, report, isProcessing }) => {
+const FinishModal = ({ isOpen, onClose, onConfirm, report, isProcessing }) => {
   const [notes, setNotes] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [errors, setErrors] = useState({});
-  
-  const fileInputRef = React.useRef(null);
+  const [error, setError] = useState('');
+  const [fileError, setFileError] = useState('');
+
+  if (!report) return null;
 
   const handleNotesChange = (e) => {
     setNotes(e.target.value);
-    
-    // Clear error when user types
-    if (errors.notes) {
-      setErrors(prev => ({ ...prev, notes: null }));
+    if (e.target.value.trim()) {
+      setError('');
     }
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
     
-    // Validate file size and type
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      setErrors(prev => ({
-        ...prev,
-        file: 'Ukuran file tidak boleh melebihi 5MB'
-      }));
-      return;
-    }
-    
-    // Accept PDF, images, and common document formats
-    const allowedTypes = [
-      'application/pdf',
-      'image/jpeg',
-      'image/png',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-    
-    if (!allowedTypes.includes(file.type)) {
-      setErrors(prev => ({
-        ...prev,
-        file: 'Format file tidak didukung. Gunakan PDF, JPG, PNG, DOC, atau DOCX'
-      }));
-      return;
-    }
-    
-    setSelectedFile(file);
-    
-    // Clear error when file is selected
-    if (errors.file) {
-      setErrors(prev => ({ ...prev, file: null }));
+    // Clear previous file error if the user selects a new file
+    if (file) {
+      setFileError('');
     }
   };
 
-  const handleFileClick = () => {
-    // Trigger file input click
-    fileInputRef.current.click();
-  };
-
-  const removeFile = () => {
-    setSelectedFile(null);
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleSubmit = () => {
-    // Validate
-    const newErrors = {};
-    
+  const handleConfirm = () => {
     if (!notes.trim()) {
-      newErrors.notes = 'Catatan penyelesaian harus diisi';
-    }
-    
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+      setError('Catatan penyelesaian harus diisi');
       return;
     }
     
@@ -90,114 +40,98 @@ const Finish = ({ isOpen, onClose, onConfirm, report, isProcessing }) => {
     const formData = new FormData();
     formData.append('admin_notes', notes);
     
-    if (selectedFile) {
-      formData.append('handling_proof', selectedFile);
+    // Add file if selected
+    const fileInput = document.getElementById('handling-proof');
+    if (fileInput && fileInput.files[0]) {
+      formData.append('handling_proof', fileInput.files[0]);
     }
     
     onConfirm(formData);
   };
 
-  const handleCancel = () => {
-    // Reset form
+  const handleClose = () => {
+    // Reset form state on close
     setNotes('');
-    setSelectedFile(null);
-    setErrors({});
+    setError('');
+    setFileError('');
     onClose();
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleCancel}
-      title="Selesaikan Laporan"
-      size="md"
-    >
-      <div className="space-y-4">
-        <div className="flex items-center justify-center text-green-500 my-4">
-          <FiCheckCircle size={48} />
+    <Modal isOpen={isOpen} onClose={handleClose} size="md">
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Selesaikan Laporan</h2>
+          <button 
+            onClick={handleClose}
+            disabled={isProcessing}
+            className="text-gray-400 hover:text-gray-500 disabled:opacity-50"
+          >
+            <FiX size={24} />
+          </button>
         </div>
         
-        <p className="text-center text-gray-700">
-          Pastikan laporan ini benar-benar telah ditangani dan diselesaikan. Setelah dikonfirmasi,
-          status laporan akan diperbarui menjadi 'Selesai'
-        </p>
-        
-        <div className="bg-gray-50 p-3 rounded text-center font-medium text-gray-800">
-          {report?.title}
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tambahkan catatan penyelesaian <span className="text-red-500">*</span>
-          </label>
-          <TextArea
-            value={notes}
-            onChange={handleNotesChange}
-            placeholder="Jelaskan tindakan yang telah dilakukan untuk menyelesaikan laporan ini..."
-            rows={4}
-            error={errors.notes}
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Lampiran bukti penanganan
-          </label>
+        <div className="mt-2">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+            <FiCheckCircle className="h-6 w-6 text-green-600" aria-hidden="true" />
+          </div>
+          <p className="text-center text-gray-900">
+            Pastikan laporan ini benar-benar telah ditangani dan diselesaikan
+          </p>
+          <p className="text-center text-gray-600 mt-1">
+            "{report.title}"
+          </p>
           
-          {/* Hidden file input */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-          />
-          
-          {!selectedFile ? (
-            <div 
-              className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary cursor-pointer"
-              onClick={handleFileClick}
-            >
-              <div className="flex flex-col items-center">
-                <FiUpload className="text-gray-400 text-3xl mb-2" />
-                <p className="text-sm text-primary">Pilih file</p>
-                <p className="text-xs text-gray-500 mt-1">PDF, JPG, PNG, DOC (Maks. 5MB)</p>
-              </div>
+          <div className="mt-4">
+            <label htmlFor="completion-notes" className="block text-sm font-medium text-gray-700">
+              Catatan Penyelesaian <span className="text-red-500">*</span>
+            </label>
+            <div className="mt-1">
+              <TextArea
+                id="completion-notes"
+                name="admin_notes"
+                value={notes}
+                onChange={handleNotesChange}
+                placeholder="Jelaskan tindakan yang telah dilakukan untuk menyelesaikan laporan ini..."
+                rows={4}
+                disabled={isProcessing}
+                error={error}
+              />
             </div>
-          ) : (
-            <div className="border border-gray-200 rounded-lg p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <FiFile className="text-primary mr-2" />
-                  <span className="text-sm font-medium text-gray-700">{selectedFile.name}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={removeFile}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <FiX size={18} />
-                </button>
-              </div>
-            </div>
-          )}
+            <p className="mt-1 text-xs text-gray-500">
+              Catatan penyelesaian akan ditampilkan kepada pelapor.
+            </p>
+          </div>
           
-          {errors.file && (
-            <p className="mt-1 text-xs text-red-500">{errors.file}</p>
-          )}
+          <div className="mt-4">
+            <FileInput
+              id="handling-proof"
+              name="handling_proof"
+              label="Lampiran Bukti Penanganan"
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              onChange={handleFileChange}
+              disabled={isProcessing}
+              error={fileError}
+              helperText="PDF, JPG, PNG, DOC (Maks. 5MB)"
+              buttonClassName="primary"
+              size="md"
+            />
+          </div>
         </div>
         
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 mt-4">
+        <div className="mt-6 flex justify-end space-x-3">
           <Button
             variant="outline"
-            onClick={handleCancel}
+            onClick={handleClose}
             disabled={isProcessing}
           >
             Batal
           </Button>
+          
           <Button
             variant="primary"
-            onClick={handleSubmit}
+            icon={<FiCheckCircle />}
+            onClick={handleConfirm}
             loading={isProcessing}
             disabled={isProcessing}
           >
@@ -209,7 +143,7 @@ const Finish = ({ isOpen, onClose, onConfirm, report, isProcessing }) => {
   );
 };
 
-Finish.propTypes = {
+FinishModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
@@ -217,4 +151,4 @@ Finish.propTypes = {
   isProcessing: PropTypes.bool
 };
 
-export default Finish;
+export default FinishModal;

@@ -103,7 +103,7 @@ const DetailModal = ({ isOpen, onClose, report, onApprove, onReject }) => {
             Tutup
           </Button>
           
-          <Button
+          {/* <Button
             variant="danger"
             icon={<FiXCircle />}
             onClick={onReject}
@@ -117,7 +117,7 @@ const DetailModal = ({ isOpen, onClose, report, onApprove, onReject }) => {
             onClick={onApprove}
           >
             Proses Laporan
-          </Button>
+          </Button> */}
         </div>
       </div>
     </Modal>

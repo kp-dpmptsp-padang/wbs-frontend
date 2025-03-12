@@ -1,5 +1,3 @@
-// In MakeReport.jsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/contexts/ToastContext';
@@ -85,20 +83,22 @@ const MakeReport = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {showGuidelines ? (
-        <ReportRules 
-          onAccept={handleAcceptGuidelines}
-          accepted={acceptedGuidelines}
-          onAcceptedChange={setAcceptedGuidelines}
-        />
-      ) : (
-        <ReportForm 
-          onSubmit={handleSubmitReport}
-          onViewGuidelines={handleViewGuidelines}
-          isSubmitting={isSubmitting}
-        />
-      )}
+    <div className="p-6 bg-white border rounded-lg shadow-sm border-gray-200 min-h-screen">
+      <div className="container">
+        {showGuidelines ? (
+          <ReportRules 
+            onAccept={handleAcceptGuidelines}
+            accepted={acceptedGuidelines}
+            onAcceptedChange={setAcceptedGuidelines}
+          />
+        ) : (
+          <ReportForm 
+            onSubmit={handleSubmitReport}
+            onViewGuidelines={handleViewGuidelines}
+            isSubmitting={isSubmitting}
+          />
+        )}
+      </div>
     </div>
   );
 };

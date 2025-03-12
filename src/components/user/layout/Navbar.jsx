@@ -1,10 +1,11 @@
-// src/components/user/layout/Navbar.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiMenu, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
 import Logo from '@/components/common/Logo';
 import NotificationDropdown from '@/components/user/layout/NotificationDropdown';
+import Avatar from '@/components/common/Avatar';
+import AvatarIcon from '@/assets/images/logo.svg';
 
 const Navbar = ({ toggleSidebar }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -12,18 +13,6 @@ const Navbar = ({ toggleSidebar }) => {
 
   const handleLogout = () => {
     logout();
-  };
-
-  // Get user initials for the avatar
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
   };
 
   return (
@@ -56,9 +45,13 @@ const Navbar = ({ toggleSidebar }) => {
             className="flex items-center focus:outline-none"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
-            <div className="h-9 w-9 overflow-hidden rounded-full bg-primary text-white flex items-center justify-center">
-              <span className="font-medium text-sm">{getInitials(user?.name)}</span>
-            </div>
+            <Avatar 
+              src={user?.profileImageUrl || AvatarIcon}
+              alt={user?.name || 'User'} 
+              size="sm" 
+              shape="circle"
+              fallbackClassName="bg-primary text-white"
+            />
           </button>
 
           {/* Dropdown menu */}
@@ -71,13 +64,13 @@ const Navbar = ({ toggleSidebar }) => {
               >
                 Profil
               </Link>
-              <Link
+              {/* <Link
                 to="/notifikasi"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => setShowProfileMenu(false)}
               >
                 Notifikasi
-              </Link>
+              </Link> */}
               <div className="border-t border-gray-100 my-1"></div>
               <button
                 className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"

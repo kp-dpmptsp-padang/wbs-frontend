@@ -7,14 +7,16 @@ import {
   FiMapPin, 
   FiCalendar, 
   FiUser, 
-  FiUploadCloud, 
-  FiSend, 
-  FiX 
+  FiSend
 } from 'react-icons/fi';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import TextArea from '@/components/common/TextArea';
+import Checkbox from '@/components/common/Checkbox';
+import PageContainer from '@/components/user/layout/PageContainer';
+import DatePicker from '@/components/common/DatePicker';
+import FileInput from '@/components/common/FileInput';
 
 const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
   const [reportForm, setReportForm] = useState({
@@ -28,8 +30,6 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
     evidence_files: null
   });
   const [errors, setErrors] = useState({});
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [filePreview, setFilePreview] = useState(null);
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -45,16 +45,33 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
     }
   };
 
+  // Handle date change from DatePicker
+  const handleDateChange = (dateString, dateObj) => {
+    // Convert dateString to required format (DD-MM-YYYY)
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+    
+    setReportForm(prev => ({
+      ...prev,
+      date: formattedDate
+    }));
+    
+    // Clear error when date is selected
+    if (errors.date) {
+      setErrors(prev => ({ ...prev, date: null }));
+    }
+  };
+
+  // Handle file change
   const handleFileChange = (e) => {
-    console.log("File input change triggered");
-    const file = e.target.files[0];
+    const file = e.target.files && e.target.files[0];
+    
     if (!file) {
-      console.log("No file selected");
       return;
     }
     
-    console.log("File selected:", file.name, file.type, file.size);
-  
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setErrors(prev => ({
@@ -63,7 +80,7 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
       }));
       return;
     }
-  
+    
     // Check file type
     const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(file.type)) {
@@ -73,26 +90,13 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
       }));
       return;
     }
-  
+    
     setReportForm(prev => ({
       ...prev,
       evidence_files: file
     }));
-    setSelectedFile(file);
-  
-    // Create preview for image files
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFilePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      // For non-image files, just show the file name
-      setFilePreview(null);
-    }
-  
-    // Clear error
+    
+    // Clear error when file is selected
     if (errors.evidence_files) {
       setErrors(prev => ({ ...prev, evidence_files: null }));
     }
@@ -144,7 +148,7 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Di ReportForm.jsx - fungsi handleSubmit
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -186,246 +190,187 @@ const ReportForm = ({ onSubmit, onViewGuidelines, isSubmitting }) => {
     onSubmit(formData);
   };
 
+  // Create header action button for viewing guidelines
+  const headerActions = (
+    <Button
+      variant="outline-primary"
+      size="small"
+      onClick={onViewGuidelines}
+      icon={<FiInfo />}
+    >
+      Lihat Panduan
+    </Button>
+  );
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Buat Laporan Baru</h2>
-        <Button
-          variant="outline-primary"
-          size="small"
-          onClick={onViewGuidelines}
-          icon={<FiInfo />}
-        >
-          Lihat Panduan
-        </Button>
-      </div>
+    <PageContainer title="Buat Laporan Baru" actions={headerActions}>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Judul Laporan */}
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            Judul Laporan <span className="text-red-500">*</span>
+          </label>
+          <Input
+            id="title"
+            name="title"
+            type="text"
+            value={reportForm.title}
+            onChange={handleChange}
+            error={errors.title}
+            placeholder="Masukkan judul laporan (minimal 3 kata)"
+            leftIcon={<FiFileText className="text-gray-400" />}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Contoh: "Pungli dalam Perizinan Mendirikan Bangunan di Kota Padang"
+          </p>
+        </div>
 
-      <Card>
-        <form onSubmit={handleSubmit} className="p-4 space-y-6">
-          {/* Judul Laporan */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              Judul Laporan <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="title"
-              name="title"
-              type="text"
-              value={reportForm.title}
-              onChange={handleChange}
-              error={errors.title}
-              placeholder="Masukkan judul laporan (minimal 3 kata)"
-              leftIcon={<FiFileText />}
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Contoh: "Pungli dalam Perizinan Mendirikan Bangunan di Kota Padang"
-            </p>
-          </div>
+        {/* Jenis Pelanggaran */}
+        <div>
+          <label htmlFor="violation" className="block text-sm font-medium text-gray-700 mb-1">
+            Jenis Pelanggaran <span className="text-red-500">*</span>
+          </label>
+          <Input
+            id="violation"
+            name="violation"
+            type="text"
+            value={reportForm.violation}
+            onChange={handleChange}
+            error={errors.violation}
+            placeholder="Masukkan jenis pelanggaran"
+            leftIcon={<FiAlertTriangle className="text-gray-400" />}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Contoh: "Korupsi", "Penyalahgunaan Wewenang", "Kecurangan", dll.
+          </p>
+        </div>
 
-          {/* Jenis Pelanggaran */}
-          <div>
-            <label htmlFor="violation" className="block text-sm font-medium text-gray-700 mb-1">
-              Jenis Pelanggaran <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="violation"
-              name="violation"
-              type="text"
-              value={reportForm.violation}
-              onChange={handleChange}
-              error={errors.violation}
-              placeholder="Masukkan jenis pelanggaran"
-              leftIcon={<FiAlertTriangle />}
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Contoh: "Korupsi", "Penyalahgunaan Wewenang", "Kecurangan", dll.
-            </p>
-          </div>
+        {/* Lokasi */}
+        <div>
+          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+            Lokasi Kejadian <span className="text-red-500">*</span>
+          </label>
+          <Input
+            id="location"
+            name="location"
+            type="text"
+            value={reportForm.location}
+            onChange={handleChange}
+            error={errors.location}
+            placeholder="Masukkan lokasi kejadian"
+            leftIcon={<FiMapPin className="text-gray-400" />}
+          />
+        </div>
 
-          {/* Lokasi */}
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-              Lokasi Kejadian <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="location"
-              name="location"
-              type="text"
-              value={reportForm.location}
-              onChange={handleChange}
-              error={errors.location}
-              placeholder="Masukkan lokasi kejadian"
-              leftIcon={<FiMapPin />}
-            />
-          </div>
-
-          {/* Tanggal */}
-          <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-              Tanggal Kejadian <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="date"
-              name="date"
-              type="text"
+        {/* Tanggal - Using DatePicker with icon */}
+        <div>
+          <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+            Tanggal Kejadian <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <DatePicker
+              id="date-picker"
+              dateFormat="dd-MM-yyyy"
+              placeholderText="Pilih tanggal kejadian"
+              onChange={handleDateChange}
               value={reportForm.date}
-              onChange={handleChange}
-              error={errors.date}
-              placeholder="Format: DD-MM-YYYY"
-              leftIcon={<FiCalendar />}
+              maxDate={new Date().toISOString()} // Cannot select future dates
+              className="pl-10"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Gunakan format DD-MM-YYYY, contoh: 15-06-2023
-            </p>
-          </div>
-
-          {/* Pihak Terlibat */}
-          <div>
-            <label htmlFor="actors" className="block text-sm font-medium text-gray-700 mb-1">
-              Pihak Terlibat <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="actors"
-              name="actors"
-              type="text"
-              value={reportForm.actors}
-              onChange={handleChange}
-              error={errors.actors}
-              placeholder="Sebutkan individu/instansi yang terlibat"
-              leftIcon={<FiUser />}
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Sebutkan nama lengkap atau jabatan pihak yang dilaporkan
-            </p>
-          </div>
-
-          {/* Detail Kejadian */}
-          <div>
-            <label htmlFor="detail" className="block text-sm font-medium text-gray-700 mb-1">
-              Detail Kejadian <span className="text-red-500">*</span>
-            </label>
-            <TextArea
-              id="detail"
-              name="detail"
-              value={reportForm.detail}
-              onChange={handleChange}
-              error={errors.detail}
-              placeholder="Jelaskan kronologi dan detail kejadian secara lengkap"
-              rows={6}
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Tuliskan kronologi kejadian secara rinci mencakup waktu, tempat, dan bagaimana pelanggaran terjadi (minimal 50 karakter)
-            </p>
-          </div>
-
-          {/* File Bukti */}
-          <div>
-            <label htmlFor="evidence_files" className="block text-sm font-medium text-gray-700 mb-1">
-              Bukti Pendukung <span className="text-red-500">*</span>
-            </label>
-            <div 
-              className={`border-2 border-dashed rounded-lg p-4 ${errors.evidence_files ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-primary'}`}
-              onClick={() => document.getElementById('evidence_files').click()} // Trigger file dialog when clicking anywhere in this div
-            >
-              <div className="flex flex-col items-center">
-                {!selectedFile ? (
-                  <>
-                    <FiUploadCloud className="text-gray-400 text-3xl mb-2" />
-                    <p className="text-sm text-gray-500 mb-1">Klik atau seret file ke sini</p>
-                    <p className="text-xs text-gray-400">JPG, PNG, atau PDF (Max. 10MB)</p>
-                  </>
-                ) : (
-                  <div className="w-full">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <FiFileText className="text-primary mr-2" />
-                        <span className="text-sm font-medium text-gray-700">{selectedFile.name}</span>
-                      </div>
-                      <button
-                        type="button" 
-                        className="text-red-500 hover:text-red-700"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent triggering the parent's onClick
-                          setSelectedFile(null);
-                          setFilePreview(null);
-                          setReportForm(prev => ({ ...prev, evidence_files: null }));
-                        }}
-                      >
-                        <FiX />
-                      </button>
-                    </div>
-                    {filePreview && (
-                      <div className="mt-2 rounded-lg overflow-hidden">
-                        <img src={filePreview} alt="Preview" className="max-h-40 mx-auto" />
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Hidden file input */}
-                <input
-                  id="evidence_files"
-                  name="evidence_files"
-                  type="file"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
-                />
-                
-                {/* Explicit button for file selection */}
-                <button 
-                  type="button"
-                  className="mt-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent duplicate click events
-                    document.getElementById('evidence_files').click();
-                  }}
-                >
-                  {selectedFile ? <FiFileText className="mr-2" /> : <FiUploadCloud className="mr-2" />}
-                  {selectedFile ? "Ganti File" : "Pilih File"}
-                </button>
-              </div>
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <FiCalendar className="text-gray-400" />
             </div>
-            {errors.evidence_files && (
-              <p className="mt-1 text-xs text-red-500">{errors.evidence_files}</p>
-            )}
           </div>
+          {errors.date && (
+            <p className="mt-1 text-xs text-red-500">{errors.date}</p>
+          )}
+          <p className="mt-1 text-xs text-gray-500">
+            Pilih tanggal kejadian dalam format DD-MM-YYYY
+          </p>
+        </div>
 
-          {/* Pelaporan Anonim */}
-          <div>
-            <div className="flex items-center">
-              <input
-                id="is_anonymous"
-                name="is_anonymous"
-                type="checkbox"
-                checked={reportForm.is_anonymous}
-                onChange={handleChange}
-                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-              />
-              <label htmlFor="is_anonymous" className="ml-2 block text-sm font-medium text-gray-700">
-                Kirim sebagai laporan anonim
-              </label>
-            </div>
-            <p className="mt-1 text-xs text-gray-500 pl-6">
-              Jika dicentang, identitas Anda akan dirahasiakan. Anda akan menerima kode unik untuk memantau laporan.
-            </p>
-          </div>
+        {/* Pihak Terlibat */}
+        <div>
+          <label htmlFor="actors" className="block text-sm font-medium text-gray-700 mb-1">
+            Pihak Terlibat <span className="text-red-500">*</span>
+          </label>
+          <Input
+            id="actors"
+            name="actors"
+            type="text"
+            value={reportForm.actors}
+            onChange={handleChange}
+            error={errors.actors}
+            placeholder="Sebutkan individu/instansi yang terlibat"
+            leftIcon={<FiUser className="text-gray-400" />}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Sebutkan nama lengkap atau jabatan pihak yang dilaporkan
+          </p>
+        </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting}
-              loading={isSubmitting}
-              icon={<FiSend />}
-            >
-              Kirim Laporan
-            </Button>
-          </div>
-        </form>
-      </Card>
-    </div>
+        {/* Detail Kejadian */}
+        <div>
+          <label htmlFor="detail" className="block text-sm font-medium text-gray-700 mb-1">
+            Detail Kejadian <span className="text-red-500">*</span>
+          </label>
+          <TextArea
+            id="detail"
+            name="detail"
+            value={reportForm.detail}
+            onChange={handleChange}
+            error={errors.detail}
+            placeholder="Jelaskan kronologi dan detail kejadian secara lengkap"
+            rows={6}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Tuliskan kronologi kejadian secara rinci mencakup waktu, tempat, dan bagaimana pelanggaran terjadi (minimal 50 karakter)
+          </p>
+        </div>
+
+        {/* File Bukti - Using FileInput component */}
+        <div>
+          <label htmlFor="evidence_files" className="block text-sm font-medium text-gray-700 mb-1">
+            Bukti Pendukung <span className="text-red-500">*</span>
+          </label>
+          <FileInput
+            id="evidence_files"
+            name="evidence_files"
+            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+            onChange={handleFileChange}
+            error={errors.evidence_files}
+            helperText="File JPG, PNG, atau PDF (Maks. 10MB)"
+            buttonClassName="primary"
+          />
+        </div>
+
+        {/* Pelaporan Anonim */}
+        <div>
+          <Checkbox
+            id="is_anonymous"
+            name="is_anonymous"
+            checked={reportForm.is_anonymous}
+            onChange={handleChange}
+            label="Kirim sebagai laporan anonim"
+            helperText="Jika dicentang, identitas Anda akan dirahasiakan. Anda akan menerima kode unik untuk memantau laporan."
+          />
+        </div>
+
+        {/* Submit Button */}
+        <div className="pt-2">
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            icon={<FiSend />}
+            block
+          >
+            Kirim Laporan
+          </Button>
+        </div>
+      </form>
+    </PageContainer>
   );
 };
 

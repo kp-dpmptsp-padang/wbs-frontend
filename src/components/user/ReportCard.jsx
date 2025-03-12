@@ -1,7 +1,7 @@
 // src/components/user/ReportCard.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
-import Card from '@/components/common/Card';
+import { FiEye, FiMessageSquare } from 'react-icons/fi';
 
 const ReportCard = ({
   title,
@@ -17,27 +17,23 @@ const ReportCard = ({
   // Status configurations
   const statusConfig = {
     'menunggu-verifikasi': {
-      label: 'Menunggu Verifikasi',
+      label: 'MENUNGGU VERIFIKASI',
       color: 'bg-yellow-400',
-      iconBg: 'bg-yellow-400',
       textColor: 'text-yellow-800'
     },
     'diproses': {
-      label: 'Sedang Diproses',
+      label: 'SEDANG DIPROSES',
       color: 'bg-blue-400',
-      iconBg: 'bg-blue-400',
       textColor: 'text-blue-800'
     },
     'selesai': {
-      label: 'Selesai',
+      label: 'SELESAI',
       color: 'bg-green-500',
-      iconBg: 'bg-green-500',
       textColor: 'text-green-800'
     },
     'ditolak': {
-      label: 'Ditolak',
+      label: 'DITOLAK',
       color: 'bg-red-500',
-      iconBg: 'bg-red-500',
       textColor: 'text-red-800'
     }
   };
@@ -50,76 +46,60 @@ const ReportCard = ({
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
   
+  // Determine which actions to show based on status
+  const showCommunication = status === 'diproses' || status === 'selesai';
+  
   return (
-    <Card 
-      variant="outline"
-      className={`overflow-hidden h-full flex flex-col ${className}`}
+    <div 
+      className={`rounded-lg overflow-hidden border border-gray-200 bg-white ${className}`}
       {...rest}
     >
-      {/* Top section with status color */}
-      <div className={`${statusInfo.color} p-4 flex justify-center`}>
-        <div className="bg-white rounded-lg p-3 inline-flex justify-center items-center size-16">
-          {icon ? (
-            icon
-          ) : (
-            <svg 
-              className={`size-10 ${statusInfo.textColor}`} 
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d={
-                  status === 'selesai' ? "M5 13l4 4L19 7" :
-                  status === 'ditolak' ? "M6 18L18 6M6 6l12 12" :
-                  "M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                }
-              />
-            </svg>
-          )}
+      {/* Header with status color */}
+      <div className={`${statusInfo.color} flex items-center justify-center`}>
+        <div className="h-16 relative w-full">
+          <div className="absolute left-1/2 top-full transform -translate-x-1/2 -translate-y-1/2">
+            <div className="bg-white size-20 flex items-center justify-center rounded-full border border-gray-200 shadow-sm">
+              {icon}
+            </div>
+          </div>
         </div>
       </div>
       
-      {/* Report status label */}
-      <div className={`text-center py-2 ${statusInfo.textColor} text-sm font-medium`}>
+      {/* Status label */}
+      <div className={`text-center pt-10 pb-2 ${statusInfo.textColor} text-xs font-bold tracking-wide`}>
         {statusInfo.label}
       </div>
       
       {/* Report content */}
-      <div className="p-4 flex-1">
+      <div className="px-4 py-3">
         <h3 className="text-base font-semibold text-gray-800 mb-1">{title}</h3>
         <p className="text-xs text-gray-500 mb-3">Terjadi pada {date}</p>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600">
           {truncateText(description)}
         </p>
       </div>
       
       {/* Action buttons */}
-      <div className="flex border-t border-gray-200 mt-auto">
+      <div className="border-t border-gray-200 flex divide-x divide-gray-200 mt-4">
         <button 
-          className="flex-1 py-3 text-sm text-center text-gray-700 hover:bg-gray-50 transition-colors"
+          className="py-3 flex-1 flex items-center justify-center text-sm text-gray-700 hover:bg-gray-50"
           onClick={() => onClick && onClick('detail')}
         >
-          Detail
+          <FiEye className="mr-2" />
+          Lihat Detail
         </button>
         
-        <div className="border-r border-gray-200"></div>
-        
-        <button 
-          className="flex-1 py-3 text-sm text-center text-gray-700 hover:bg-gray-50 transition-colors relative"
-          onClick={() => onClick && onClick('komunikasi')}
-        >
-          Komunikasi
-          {hasNewMessages && (
-            <span className="absolute top-3 right-6 size-2 bg-red-500 rounded-full"></span>
-          )}
-        </button>
+        {showCommunication && (
+          <button 
+            className="py-3 flex-1 flex items-center justify-center text-sm text-blue-600 hover:bg-gray-50"
+            onClick={() => onClick && onClick('komunikasi')}
+          >
+            <FiMessageSquare className="mr-2" />
+            Komunikasi
+          </button>
+        )}
       </div>
-    </Card>
+    </div>
   );
 };
 
@@ -134,4 +114,4 @@ ReportCard.propTypes = {
   className: PropTypes.string
 };
 
-export default ReportCard;
+export default ReportCard;  

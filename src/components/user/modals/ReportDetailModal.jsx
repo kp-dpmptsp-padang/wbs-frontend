@@ -26,6 +26,9 @@ const ReportDetailModal = ({ isOpen, onClose, report }) => {
     );
   };
 
+  // Check if communication button should be shown
+  const showCommunicationButton = report.status === 'diproses' || report.status === 'selesai';
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <div className="p-6">
@@ -125,15 +128,17 @@ const ReportDetailModal = ({ isOpen, onClose, report }) => {
             Tutup
           </Button>
           
-          <Button
-            variant="primary"
-            onClick={() => {
-              onClose();
-              window.location.href = `/chat?reportId=${report.id}`;
-            }}
-          >
-            Komunikasi
-          </Button>
+          {showCommunicationButton && (
+            <Button
+              variant="primary"
+              onClick={() => {
+                onClose();
+                window.location.href = `/chat?reportId=${report.id}`;
+              }}
+            >
+              Komunikasi
+            </Button>
+          )}
         </div>
       </div>
     </Modal>
@@ -146,4 +151,4 @@ ReportDetailModal.propTypes = {
   report: PropTypes.object
 };
 
-export default ReportDetailModal;   
+export default ReportDetailModal;

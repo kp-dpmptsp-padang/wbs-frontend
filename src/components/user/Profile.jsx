@@ -1,9 +1,9 @@
-// src/components/user/Profile.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FiUser, FiMail, FiClock, FiFileText } from 'react-icons/fi';
 import Card from '@/components/common/Card';
 import Avatar from '@/components/common/Avatar';
+import AvatarIcon from '@/assets/images/logo.svg';
 import Badge from '@/components/common/Badge';
 import { formatDate } from '@/utils/formatters';
 
@@ -57,8 +57,8 @@ const getInitials = (name) => {
         {/* Avatar/Profile Picture */}
         <div className="flex-shrink-0">
           <Avatar 
-            size="xl"
-            src={user.avatar}
+            size="sm"
+            src={user.avatar || AvatarIcon}
             alt={user.name}
             initials={getInitials(user.name)}
             className="border-4 border-white shadow-md"

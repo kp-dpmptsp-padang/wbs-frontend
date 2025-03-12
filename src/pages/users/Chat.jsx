@@ -1,15 +1,29 @@
 // src/pages/users/Chat.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FiSend, FiArrowLeft } from 'react-icons/fi';
+import { 
+  FiSend, 
+  FiArrowLeft, 
+  FiAlertTriangle, 
+  FiClock, 
+  FiCheckCircle,
+  FiPaperclip,
+  FiDownload,
+  FiEye,
+  FiMessageSquare,
+  FiFileText
+} from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
+import Badge from '@/components/common/Badge';
+import ChatBubbles, { ChatBubble } from '@/components/common/ChatBubbles';
 import reportService from '@/services/report.service';
 import chatService from '@/services/chat.service';
+import { formatDate } from '@/utils/formatters';
 
 const Chat = () => {
   const location = useLocation();
@@ -27,15 +41,12 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isReportLoading, setIsReportLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [activeTab, setActiveTab] = useState('chat');
   
   // Refs
   const chatContainerRef = useRef(null);
   const chatPollingRef = useRef(null);
-
-  // Log key info
-  useEffect(() => {
-    console.log('Chat component mounted:', { reportId, uniqueCode, user });
-  }, [reportId, uniqueCode, user]);
+  const inputRef = useRef(null);
 
   // Fetch report details and chats
   useEffect(() => {
@@ -89,12 +100,11 @@ const Chat = () => {
         clearInterval(chatPollingRef.current);
       }
     };
-  }, [reportId, uniqueCode]);
+  }, [reportId, uniqueCode, addToast, navigate]);
   
   // Fetch chat history function
   const fetchChatHistory = async () => {
     try {
-      console.log('Fetching chat history...');
       let chatResult;
       
       if (uniqueCode) {
@@ -105,7 +115,6 @@ const Chat = () => {
       
       if (chatResult && chatResult.success) {
         const chatData = Array.isArray(chatResult.data) ? chatResult.data : [];
-        console.log('Chat data received:', chatData);
         setChats(chatData);
       }
     } catch (error) {
@@ -116,10 +125,10 @@ const Chat = () => {
   
   // Scroll to bottom when new messages arrive
   useEffect(() => {
-    if (chatContainerRef.current) {
+    if (chatContainerRef.current && activeTab === 'chat') {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }, [chats]);
+  }, [chats, activeTab]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -146,6 +155,11 @@ const Chat = () => {
         
         setMessage('');
         
+        // Focus back on input after sending
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+        
         // Fetch latest chat after sending
         setTimeout(() => fetchChatHistory(), 500);
       } else {
@@ -163,24 +177,8 @@ const Chat = () => {
     navigate(-1);
   };
 
-  const formatTime = (dateString) => {
-    if (!dateString) return '';
-    
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return '';
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return '';
-    }
-  };
-
   /**
    * Determine if message is from the current user
-   * Simplified logic:
-   * 1. For anonymous reports: messages without user data are from the anonymous user
-   * 2. For regular reports: compare user IDs
    */
   const isUserMessage = (chatMsg) => {
     // For anonymous reports
@@ -193,6 +191,94 @@ const Chat = () => {
     return chatMsg.user && user && String(chatMsg.user.id) === String(user.id);
   };
 
+  /**
+   * Get sender name display text
+   */
+  const getSenderName = (chatMsg, isCurrentUser) => {
+    if (uniqueCode) {
+      return isCurrentUser ? 'Anda (Pelapor Anonim)' : `${chatMsg.user?.name || 'Admin'}`;
+    }
+    
+    if (isCurrentUser) {
+      return `Anda (${user.role === 'admin' || user.role === 'super-admin' ? 'Admin' : 'Pelapor'})`;
+    }
+    
+    return `${chatMsg.user?.name || 'Admin'} (${chatMsg.user?.role === 'admin' || chatMsg.user?.role === 'super-admin' ? 'Admin' : 'Pelapor'})`;
+  };
+
+  /**
+   * Get status display for report state
+   */
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'menunggu-verifikasi':
+        return { 
+          label: 'Menunggu Verifikasi', 
+          icon: <FiAlertTriangle />,
+          variant: 'warning',
+          bgColor: 'bg-yellow-100',
+          textColor: 'text-yellow-800'
+        };
+      case 'diproses':
+        return { 
+          label: 'Sedang Diproses', 
+          icon: <FiClock />,
+          variant: 'info',
+          bgColor: 'bg-blue-100',
+          textColor: 'text-blue-800'
+        };
+      case 'selesai':
+        return { 
+          label: 'Selesai', 
+          icon: <FiCheckCircle />,
+          variant: 'success',
+          bgColor: 'bg-green-100',
+          textColor: 'text-green-800'
+        };
+      case 'ditolak':
+        return { 
+          label: 'Ditolak', 
+          icon: <FiAlertTriangle />,
+          variant: 'danger',
+          bgColor: 'bg-red-100',
+          textColor: 'text-red-800'
+        };
+      default:
+        return { 
+          label: status, 
+          icon: <FiAlertTriangle />,
+          variant: 'default',
+          bgColor: 'bg-gray-100',
+          textColor: 'text-gray-800'
+        };
+    }
+  };
+
+  // Check if user can send messages based on report status
+  const canSendMessage = () => {
+    if (!report) return false;
+    return report.status !== 'ditolak' && report.status !== 'menunggu-verifikasi';
+  };
+
+  // Format timestamp for chat messages
+  const formatChatTime = (dateString) => {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '';
+    }
+  };
+
   if (isLoading) {
     return <LoadingScreen fullScreen={false} />;
   }
@@ -200,112 +286,241 @@ const Chat = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       <Card>
-        <div className="p-4 md:p-6">
-          <div className="flex items-center mb-6">
+        {/* Header */}
+        <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center">
             <Button
-              variant="text"
-              className="mr-2 -ml-2"
+              variant="ghost-primary"
+              size="small"
+              className="mr-3"
               onClick={goBack}
-            >
-              <FiArrowLeft size={20} />
-            </Button>
-            <h1 className="text-xl font-bold text-gray-900">
-              {isReportLoading ? 'Loading...' : 
-               report ? report.title : 'Komunikasi'}
-            </h1>
+              icon={<FiArrowLeft />}
+            />
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                {isReportLoading ? 'Loading...' : report ? report.title : 'Komunikasi'}
+              </h2>
+              {report && (
+                <div className="flex items-center mt-1">
+                  <span className="text-xs text-gray-500">{report.location}</span>
+                </div>
+              )}
+            </div>
           </div>
           
-          <div className="flex flex-col h-full">
-            {/* Report Preview */}
-            {report && (
-              <div className="mb-4 bg-gray-50 p-3 rounded-md">
-                <div className="flex flex-wrap gap-2">
-                  <div className="bg-white rounded px-3 py-1 text-sm border">
-                    <span className="font-medium">Status:</span> {
-                      report.status === 'menunggu-verifikasi' ? 'Menunggu Verifikasi' :
-                      report.status === 'diproses' ? 'Sedang Diproses' :
-                      report.status === 'selesai' ? 'Selesai' : 
-                      report.status === 'ditolak' ? 'Ditolak' : report.status
-                    }
-                  </div>
-                  <div className="bg-white rounded px-3 py-1 text-sm border">
-                    <span className="font-medium">Lokasi:</span> {report.location}
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Chat Messages */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg mb-4">
-              <div className="h-96 overflow-y-auto p-4" ref={chatContainerRef}>
+          {report && (
+            <Badge 
+              variant={getStatusDisplay(report.status).variant} 
+              size="md" 
+              icon={getStatusDisplay(report.status).icon}
+            >
+              {getStatusDisplay(report.status).label}
+            </Badge>
+          )}
+        </div>
+        
+        {/* Custom Tabs */}
+        <div className="border-b border-gray-200 px-6 py-2">
+          <div className="flex">
+            <button
+              className={`mr-4 py-2 px-1 flex items-center border-b-2 text-sm font-medium ${
+                activeTab === 'chat'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+              onClick={() => setActiveTab('chat')}
+            >
+              <FiMessageSquare className="mr-2" />
+              Komunikasi
+            </button>
+            <button
+              className={`py-2 px-1 flex items-center border-b-2 text-sm font-medium ${
+                activeTab === 'details'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+              onClick={() => setActiveTab('details')}
+            >
+              <FiFileText className="mr-2" />
+              Detail Laporan
+            </button>
+          </div>
+        </div>
+        
+        {/* Tab Content */}
+        <div className="p-6">
+          {/* Chat Tab */}
+          {activeTab === 'chat' && (
+            <div>
+              <div 
+                ref={chatContainerRef}
+                className="bg-gray-50 rounded-lg border border-gray-200 h-96 overflow-y-auto p-4"
+              >
                 {chats && chats.length > 0 ? (
-                  <div>
+                  <ChatBubbles>
                     {chats.map((chat, index) => {
                       if (!chat || typeof chat !== 'object') {
-                        console.warn('Invalid chat message:', chat);
                         return null;
                       }
                       
-                      const userMessage = isUserMessage(chat);
+                      const isCurrentUser = isUserMessage(chat);
+                      const senderName = getSenderName(chat, isCurrentUser);
+                      const timestamp = formatChatTime(chat.created_at);
                       
                       return (
-                        <div key={chat.id || index} className={`flex ${userMessage ? 'justify-end' : 'justify-start'} mb-3`}>
-                          <div 
-                            className={`max-w-xs md:max-w-md px-4 py-3 rounded-lg shadow-sm ${ 
-                              userMessage 
-                                ? 'bg-blue-50 border border-blue-100 text-gray-800' 
-                                : 'bg-white border border-gray-200 text-gray-800'
-                            }`}
-                          >
-                            <div className="text-xs font-semibold mb-1 flex justify-between">
-                              <span className={userMessage ? 'text-blue-600' : 'text-gray-600'}>
-                                {userMessage ? 
-                                  (uniqueCode ? 'Anonim (Pelapor)' : (user ? `${user.name} (Pelapor)` : 'Pelapor')) : 
-                                  `${chat.user?.name || 'Admin'} (${chat.user?.role === 'admin' || chat.user?.role === 'super-admin' ? 'Admin' : 'Pelapor'})`
-                                }
-                              </span>
-                              <span className="text-gray-500 ml-4">
-                                {formatTime(chat.created_at)}
-                              </span>
-                            </div>
-                            <p className="text-sm whitespace-pre-wrap break-words">{chat.message}</p>
-                          </div>
-                        </div>
+                        <ChatBubble
+                          key={chat.id || `chat-${index}`}
+                          message={chat.message}
+                          sender={senderName}
+                          isCurrentUser={isCurrentUser}
+                          timestamp={timestamp}
+                          variant={isCurrentUser ? "light" : "default"}
+                        />
                       );
                     })}
-                  </div>
+                  </ChatBubbles>
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                      <h3 className="text-lg font-medium text-gray-900">Belum Ada Pesan</h3>
-                      <p className="text-sm text-gray-600 mt-1">Mulai komunikasi dengan mengirim pesan pertama Anda</p>
+                      <p className="text-gray-500">Belum ada pesan.</p>
+                      {canSendMessage() ? (
+                        <p className="text-sm text-gray-400 mt-1">Mulai komunikasi dengan mengirim pesan.</p>
+                      ) : (
+                        <p className="text-sm text-gray-400 mt-1">
+                          {report?.status === 'ditolak' 
+                            ? 'Komunikasi tidak tersedia karena laporan ditolak.' 
+                            : 'Komunikasi akan tersedia setelah laporan diproses.'}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
+              
+              {/* Chat Input */}
+              <div className="mt-4">
+                <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                  <div className="flex-grow">
+                    <Input
+                      ref={inputRef}
+                      type="text"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Ketik pesan..."
+                      disabled={isSending || !canSendMessage()}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    icon={<FiSend />}
+                    disabled={!message.trim() || isSending || !canSendMessage()}
+                    loading={isSending}
+                  >
+                    Kirim
+                  </Button>
+                </form>
+                
+                {!canSendMessage() && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {report?.status === 'ditolak' 
+                      ? 'Anda tidak dapat mengirim pesan karena laporan sudah ditolak.' 
+                      : 'Komunikasi akan tersedia setelah laporan diproses oleh admin.'}
+                  </p>
+                )}
+              </div>
             </div>
-            
-            {/* Message Input */}
-            <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
-              <Input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Ketik pesan..."
-                className="flex-grow"
-                disabled={isSending}
-              />
-              <Button
-                type="submit"
-                variant="primary"
-                icon={<FiSend />}
-                disabled={!message.trim() || isSending}
-                loading={isSending}
-              >
-                Kirim
-              </Button>
-            </form>
-          </div>
+          )}
+          
+          {/* Details Tab */}
+          {activeTab === 'details' && report && (
+            <div className="bg-white rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Jenis Pelanggaran</h4>
+                  <p className="text-gray-900">{report.violation}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Tanggal Kejadian</h4>
+                  <p className="text-gray-900">{formatDate(report.date)}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Lokasi</h4>
+                  <p className="text-gray-900">{report.location}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Pihak yang Terlibat</h4>
+                  <p className="text-gray-900">{report.actors}</p>
+                </div>
+                {report.unique_code && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Kode Unik</h4>
+                    <p className="text-gray-900">{report.unique_code}</p>
+                  </div>
+                )}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Status</h4>
+                  <div>
+                    <Badge 
+                      variant={getStatusDisplay(report.status).variant} 
+                      size="md" 
+                      icon={getStatusDisplay(report.status).icon}
+                    >
+                      {getStatusDisplay(report.status).label}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <h4 className="text-sm font-medium text-gray-500 mb-1">Detail Kejadian</h4>
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <p className="text-gray-900 whitespace-pre-line">{report.detail}</p>
+                </div>
+              </div>
+              
+              {/* Lampiran */}
+              {report.files && report.files.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">Lampiran</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {report.files.map((file, index) => (
+                      <a
+                        key={index}
+                        href={file.file_url || file.file_path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-2 rounded-md bg-gray-100 text-gray-700 text-sm hover:bg-gray-200 transition-colors"
+                      >
+                        {file.file_type === 'image' ? (
+                          <FiEye className="mr-2" />
+                        ) : (
+                          <FiPaperclip className="mr-2" />
+                        )}
+                        {file.file_path.split('/').pop()}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Rejection reason if rejected */}
+              {report.status === 'ditolak' && report.rejection_reason && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h4 className="text-sm font-medium text-red-800 mb-1">Alasan Penolakan</h4>
+                  <p className="text-red-700">{report.rejection_reason}</p>
+                </div>
+              )}
+              
+              {/* Admin notes if completed */}
+              {report.status === 'selesai' && report.admin_notes && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="text-sm font-medium text-green-800 mb-1">Catatan Penyelesaian</h4>
+                  <p className="text-green-700">{report.admin_notes}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </Card>
     </div>

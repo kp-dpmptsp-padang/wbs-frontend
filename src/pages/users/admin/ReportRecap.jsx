@@ -385,7 +385,7 @@ const ReportRecap = () => {
               </div>
               
               <div className="flex gap-2">
-                <Select
+                {/* <Select
                   value={statusFilter}
                   onChange={handleStatusFilterChange}
                   className="w-40"
@@ -393,7 +393,7 @@ const ReportRecap = () => {
                   <option value="all">Semua</option>
                   <option value="selesai">Selesai</option>
                   <option value="ditolak">Ditolak</option>
-                </Select>
+                </Select> */}
                 
                 <Button
                   variant="primary"
@@ -403,13 +403,13 @@ const ReportRecap = () => {
                   Refresh
                 </Button>
                 
-                <Button
+                {/* <Button
                   variant="success"
                   icon={<FiDownload />}
                   onClick={downloadReportRecap}
                 >
                   Unduh Rekap
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
